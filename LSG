@@ -1,0 +1,3 @@
+cd D:\downloads\lsg-hub
+git remote add origin https://github.com/luxsmartglass/lsg-hub.git
+git branch -M main
