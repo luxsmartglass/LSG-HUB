@@ -5,6 +5,7 @@ import Layout from './components/layout/Layout'
 import Login from './pages/Login'
 import Dashboard from './components/dashboard/Dashboard'
 import Estimator from './components/estimator/Estimator'
+import EstimateList from './components/estimator/EstimateList'
 import Pipeline from './components/pipeline/Pipeline'
 import Contacts from './components/contacts/Contacts'
 import Invoices from './components/invoices/Invoices'
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/estimator" element={<Estimator />} />
                 <Route path="/estimator/:id" element={<Estimator />} />
+                <Route path="/estimates" element={<EstimateList />} />
                 <Route path="/pipeline" element={<Pipeline />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/invoices" element={<Invoices />} />

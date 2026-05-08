@@ -6,6 +6,7 @@ import { calcQuote } from '../../lib/pricingDatabase'
 import ZoneBuilder from './ZoneBuilder'
 import QuoteSidebar from './QuoteSidebar'
 import TransformerSelector from './TransformerSelector'
+import EstimatePDF from './EstimatePDF'
 
 const STEPS = ['Project Info', 'Glass Zones', 'Options & Pricing']
 
@@ -27,6 +28,8 @@ export default function Estimator() {
   const [w, setW] = useState(DEFAULT_WIZARD)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({})
+  const [savedEstimate, setSavedEstimate] = useState(null)
+  const [showPdf, setShowPdf] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -55,7 +58,7 @@ export default function Estimator() {
 
   const calc = calcQuote(w, settings)
 
-  async function saveEstimate(andNavigate = true) {
+  async function saveEstimate() {
     if (!w.client_name.trim()) { toast('Client name required', 'error'); return }
     if (!w.zones.length) { toast('Add at least one zone', 'error'); return }
     setSaving(true)
@@ -75,10 +78,11 @@ export default function Estimator() {
       if (id) {
         await supabase.from('estimates').update(record).eq('id', id)
         toast('Estimate updated!')
+        setSavedEstimate({ ...w, id, total_revenue: calc.totalRev, total_cost: calc.totalCost, net_margin: calc.netMargin, margin_pct: calc.marginPct, shipping: calc.shipping, transformer: calc.tf })
       } else {
         const { data } = await supabase.from('estimates').insert(record).select().single()
         toast('Estimate saved!')
-        if (andNavigate && data) navigate(`/estimator/${data.id}`)
+        setSavedEstimate({ ...w, id: data?.id, total_revenue: calc.totalRev, total_cost: calc.totalCost, net_margin: calc.netMargin, margin_pct: calc.marginPct, shipping: calc.shipping, transformer: calc.tf })
       }
     } catch (e) {
       toast('Save failed: ' + e.message, 'error')
@@ -89,6 +93,7 @@ export default function Estimator() {
 
   return (
     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', animation: 'fadeUp 0.35s ease both' }}>
+      {showPdf && savedEstimate && <EstimatePDF estimate={savedEstimate} onClose={() => setShowPdf(false)} />}
       {/* MAIN */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Step bar */}
@@ -174,14 +179,23 @@ export default function Estimator() {
           <div style={{ display: 'flex', gap: 10 }}>
             {w.step === 3 ? (
               <>
-                <button onClick={() => saveEstimate(false)} disabled={saving} style={ghostBtn}>Save Draft</button>
-                <button onClick={() => saveEstimate(true)} disabled={saving} style={goldBtn}>{saving ? 'Saving…' : 'Save Estimate'}</button>
+                <button onClick={saveEstimate} disabled={saving} style={ghostBtn}>Save Draft</button>
+                <button onClick={saveEstimate} disabled={saving} style={goldBtn}>{saving ? 'Saving…' : 'Save Estimate'}</button>
               </>
             ) : (
               <button onClick={nextStep} style={navyBtn}>Next →</button>
             )}
           </div>
         </div>
+        {savedEstimate && (
+          <div style={{ background: '#fef8ec', border: '1px solid #c9a84c', borderRadius: 8, padding: '12px 16px', marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ color: '#a8883c', fontWeight: 500, fontSize: 13.5 }}>✓ Estimate saved successfully</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => navigate('/estimates')} style={ghostBtn}>View All Estimates</button>
+              <button onClick={() => setShowPdf(true)} style={goldBtn}>📄 Generate PDF</button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* SIDEBAR */}
