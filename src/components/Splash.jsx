@@ -99,6 +99,7 @@ export default function Splash({ onComplete }) {
           ref={videoRef}
           src="/intro.mp4"
           playsInline
+          muted
           style={{
             position: 'fixed',
             inset: 0,
