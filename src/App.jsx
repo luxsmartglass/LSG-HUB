@@ -70,6 +70,7 @@ export default function App() {
 
 function AuthCallback() {
   useEffect(() => {
+    sessionStorage.removeItem('lsg_splash_seen')
     supabase.auth.exchangeCodeForSession(window.location.href).then(() => {
       window.location.href = '/'
     })
