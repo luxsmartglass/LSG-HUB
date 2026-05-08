@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
 import { calcQuote } from '../../lib/pricingDatabase'
@@ -24,6 +24,7 @@ const DEFAULT_WIZARD = {
 export default function Estimator() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
   const [w, setW] = useState(DEFAULT_WIZARD)
   const [saving, setSaving] = useState(false)
@@ -35,6 +36,12 @@ export default function Estimator() {
     loadSettings()
     if (id) loadEstimate(id)
   }, [id])
+
+  useEffect(() => {
+    if (location.state?.prefill) {
+      setW(prev => ({ ...prev, ...location.state.prefill }))
+    }
+  }, [])
 
   async function loadSettings() {
     const { data } = await supabase.from('settings').select('key, value')

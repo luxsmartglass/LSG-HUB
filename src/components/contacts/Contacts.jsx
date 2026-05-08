@@ -68,23 +68,17 @@ export default function Contacts() {
   }
 
   const handleNewContact = async () => {
-    const blank = {
-      name: 'New Contact',
-      email: '',
-      phone: '',
-      company: '',
-      role: '',
-      source: 'Manual',
-      notes: '',
-      tags: [],
-    }
-    const { data, error } = await supabase.from('contacts').insert(blank).select().single()
-    if (error) {
-      addToast('Failed to create contact', 'error')
-    } else {
+    try {
+      const { data, error } = await supabase
+        .from('contacts')
+        .insert({ name: 'New Contact', source: 'Manual' })
+        .select()
+        .single()
+      if (error) throw error
       setContacts(prev => [data, ...prev])
       setSelectedContact(data)
-      addToast('New contact created')
+    } catch (e) {
+      addToast('Could not create contact: ' + e.message, 'error')
     }
   }
 

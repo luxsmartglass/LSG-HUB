@@ -1,14 +1,6 @@
 const NAVY = '#1c2b4a'
 const GOLD = '#c9a84c'
 
-const COMPANY = {
-  name:    'LUX SMART GLASS',
-  tagline: 'Premium Smart Glass Solutions',
-  address: '123 King Street West, Suite 400\nToronto, ON  M5H 1J9',
-  phone:   '(416) 555-0199',
-  email:   'info@luxsmartglass.ca',
-  website: 'www.luxsmartglass.ca',
-}
 
 function fmtDate(d) {
   if (!d) return '—'
@@ -29,7 +21,16 @@ function GoldLine() {
   )
 }
 
-export default function InvoicePDF({ invoice, onClose, onEdit }) {
+export default function InvoicePDF({ invoice, onClose, onEdit, settings = {} }) {
+  const company = {
+    name:    settings.company_name    || 'LUX SMART GLASS',
+    tagline: settings.company_tagline || 'Premium Smart Glass Solutions',
+    address: settings.company_address || 'Greater Toronto Area, ON',
+    phone:   settings.company_phone   || '',
+    email:   settings.company_email   || 'info@luxsmartglass.ca',
+    website: settings.company_website || 'luxsmartglass.ca',
+  }
+
   const items = Array.isArray(invoice.items) ? invoice.items : []
   const subtotal    = items.reduce((s, it) => s + (parseFloat(it.qty) || 0) * (parseFloat(it.unit_price) || 0), 0)
   const taxPct      = parseFloat(invoice.tax_pct) || 13
@@ -143,19 +144,19 @@ export default function InvoicePDF({ invoice, onClose, onEdit }) {
                 fontSize: 28, fontWeight: 900, color: NAVY,
                 letterSpacing: '0.04em', lineHeight: 1
               }}>
-                {COMPANY.name}
+                {company.name}
               </div>
               <div style={{ fontSize: 13, color: GOLD, fontWeight: 600, marginTop: 4 }}>
-                {COMPANY.tagline}
+                {company.tagline}
               </div>
             </div>
             <div style={{ textAlign: 'right', fontSize: 13, color: '#555', lineHeight: 1.7 }}>
-              {COMPANY.address.split('\n').map((line, i) => (
+              {company.address.split('\n').map((line, i) => (
                 <div key={i}>{line}</div>
               ))}
-              <div>{COMPANY.phone}</div>
-              <div>{COMPANY.email}</div>
-              <div style={{ color: NAVY }}>{COMPANY.website}</div>
+              <div>{company.phone}</div>
+              <div>{company.email}</div>
+              <div style={{ color: NAVY }}>{company.website}</div>
             </div>
           </div>
 
@@ -307,8 +308,8 @@ export default function InvoicePDF({ invoice, onClose, onEdit }) {
 
           {/* Footer */}
           <div style={{ textAlign: 'center', fontSize: 12, color: '#999', lineHeight: 1.8 }}>
-            <div style={{ fontWeight: 600, color: NAVY, marginBottom: 2 }}>Thank you for choosing {COMPANY.name}</div>
-            <div>{COMPANY.phone}  ·  {COMPANY.email}  ·  {COMPANY.website}</div>
+            <div style={{ fontWeight: 600, color: NAVY, marginBottom: 2 }}>Thank you for choosing {company.name}</div>
+            <div>{company.phone}  ·  {company.email}  ·  {company.website}</div>
             <div style={{ marginTop: 4 }}>Payment due within 30 days. Please reference invoice number {invoiceNum} with your payment.</div>
           </div>
         </div>

@@ -26,7 +26,7 @@ const labelStyle = {
   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, display: 'block'
 }
 
-export default function InvoiceGenerator({ invoice, estimates, onSave, onClose }) {
+export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, settings = {} }) {
   const addToast = useToast()
 
   const [form, setForm] = useState({
@@ -34,8 +34,8 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose }
     client_name:    invoice?.client_name || '',
     estimate_id:    invoice?.estimate_id || '',
     items:          invoice?.items || [{ description: '', qty: 1, unit_price: 0 }],
-    tax_pct:        invoice?.tax_pct ?? 13,
-    deposit_pct:    invoice?.deposit_pct ?? 50,
+    tax_pct:        invoice?.tax_pct ?? parseFloat(settings.default_tax_rate) ?? 13,
+    deposit_pct:    invoice?.deposit_pct ?? parseFloat(settings.default_deposit_pct) ?? 50,
     deposit_paid:   invoice?.deposit_paid ?? false,
     due_date:       invoice?.due_date || '',
     notes:          invoice?.notes || '',

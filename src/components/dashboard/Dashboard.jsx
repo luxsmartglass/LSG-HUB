@@ -62,7 +62,7 @@ export default function Dashboard() {
     try {
       const [estRes, pipeRes] = await Promise.all([
         supabase.from('estimates').select('total_revenue, net_margin, margin_pct, status, created_at, client_name, total_cost').order('created_at', { ascending: false }),
-        supabase.from('pipeline').select('stage, quote_value, created_at, client_name, assigned_to').order('created_at', { ascending: false })
+        supabase.from('pipeline').select('stage, value, created_at, client_name, assigned_to').order('created_at', { ascending: false })
       ])
       if (estRes.error) throw estRes.error
       if (pipeRes.error) throw pipeRes.error
@@ -72,7 +72,7 @@ export default function Dashboard() {
       const totalRevenue = ests.reduce((a, e) => a + (e.total_revenue || 0), 0)
       const totalMargin = ests.reduce((a, e) => a + (e.net_margin || 0), 0)
       const avgMarginPct = ests.length ? ests.reduce((a, e) => a + (e.margin_pct || 0), 0) / ests.length : 0
-      const pipelineVal = pipes.filter(p => p.stage !== 'lost').reduce((a, p) => a + (p.quote_value || 0), 0)
+      const pipelineVal = pipes.filter(p => p.stage !== 'lost').reduce((a, p) => a + (p.value || 0), 0)
       const activeDeals = pipes.filter(p => !['lost', 'won'].includes(p.stage)).length
       const warmHolds = pipes.filter(p => p.stage === 'warm_hold').length
 
@@ -161,7 +161,7 @@ export default function Dashboard() {
             <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5ddd0', padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 600, color: '#1c2b4a' }}>Recent Estimates</div>
-                <button onClick={() => navigate('/contacts')} style={{ fontSize: 12.5, color: '#9ca3af', background: 'none', border: '1px solid #e5ddd0', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>View All</button>
+                <button onClick={() => navigate('/estimates')} style={{ fontSize: 12.5, color: '#9ca3af', background: 'none', border: '1px solid #e5ddd0', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>View All</button>
               </div>
               {recentEstimates.map(e => (
                 <div key={e.created_at} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f0ebe3' }}>

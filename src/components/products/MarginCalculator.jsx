@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
 import { ZONE_TYPES, filmCostPerSqm, glassCostPerSqm, DEFAULT_FX } from '../../lib/pricingDatabase'
@@ -96,6 +97,7 @@ function OutputRow({ label, value, highlight }) {
 
 export default function MarginCalculator() {
   const addToast = useToast()
+  const navigate = useNavigate()
 
   const [fx, setFx] = useState(DEFAULT_FX)
   const [sqm, setSqm] = useState('')
@@ -354,7 +356,15 @@ export default function MarginCalculator() {
 
             {/* Add to Quote */}
             <button
-              onClick={() => addToast('Quote item added! Head to the Estimator to build a full quote.', 'success')}
+              onClick={() => navigate('/estimator', {
+                state: {
+                  prefill: {
+                    zones: [{ type: zoneInfo.type, sqm: String(sqmNum) }],
+                    film_price: sellPricePerSqm,
+                    glass_price: sellPricePerSqm,
+                  }
+                }
+              })}
               style={{
                 width: '100%',
                 padding: '12px',

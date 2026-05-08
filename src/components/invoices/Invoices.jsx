@@ -35,6 +35,7 @@ export default function Invoices() {
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState('list') // 'list' | 'edit' | 'pdf'
   const [selected, setSelected] = useState(null)
+  const [settings, setSettings] = useState({})
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -48,7 +49,15 @@ export default function Invoices() {
     setLoading(false)
   }, [addToast])
 
-  useEffect(() => { fetchAll() }, [fetchAll])
+  async function loadSettings() {
+    const { data } = await supabase.from('settings').select('key, value')
+    if (data) setSettings(Object.fromEntries(data.map(r => [r.key, r.value])))
+  }
+
+  useEffect(() => {
+    fetchAll()
+    loadSettings()
+  }, [fetchAll])
 
   const handleNew = () => {
     setSelected(null)
@@ -173,6 +182,7 @@ export default function Invoices() {
           estimates={estimates}
           onSave={handleSave}
           onClose={() => setView('list')}
+          settings={settings}
         />
       )}
 
@@ -182,6 +192,7 @@ export default function Invoices() {
           invoice={selected}
           onClose={() => setView('list')}
           onEdit={() => setView('edit')}
+          settings={settings}
         />
       )}
     </div>
