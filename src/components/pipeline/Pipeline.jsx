@@ -19,7 +19,7 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
   const addToast = useToast();
   const [form, setForm] = useState({
     client_name: '',
-    value: '',
+    quote_value: '',
     stage: defaultStage || DEFAULT_STAGE,
     notes: '',
   });
@@ -38,7 +38,7 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
     setSaving(true);
     const { error } = await supabase.from('pipeline').insert({
       client_name: form.client_name.trim(),
-      value: parseFloat(form.value) || 0,
+      quote_value: parseFloat(form.quote_value) || 0,
       stage: form.stage,
       notes: form.notes.trim() || null,
     });
@@ -126,8 +126,8 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
             type="number"
             min="0"
             step="0.01"
-            value={form.value}
-            onChange={set('value')}
+            value={form.quote_value}
+            onChange={set('quote_value')}
             placeholder="0"
             style={inputStyle}
           />
@@ -215,9 +215,9 @@ export default function Pipeline() {
   }, [fetchDeals]);
 
   // Derived summary stats
-  const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.value) || 0), 0);
+  const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.quote_value) || 0), 0);
   const wonDeals = deals.filter(d => d.stage === 'won');
-  const wonValue = wonDeals.reduce((sum, d) => sum + (parseFloat(d.value) || 0), 0);
+  const wonValue = wonDeals.reduce((sum, d) => sum + (parseFloat(d.quote_value) || 0), 0);
 
   function openAddWarmContact() {
     setAddModalDefaultStage('warm_hold');

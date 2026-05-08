@@ -62,7 +62,7 @@ export default function Dashboard() {
     try {
       const [estRes, pipeRes] = await Promise.all([
         supabase.from('estimates').select('total_revenue, net_margin, margin_pct, status, created_at, client_name, total_cost').order('created_at', { ascending: false }),
-        supabase.from('pipeline').select('stage, value, created_at, client_name, assigned_to').order('created_at', { ascending: false })
+        supabase.from('pipeline').select('stage, quote_value, created_at, client_name, assigned_to').order('created_at', { ascending: false })
       ])
       if (estRes.error) throw estRes.error
       if (pipeRes.error) throw pipeRes.error
@@ -72,7 +72,7 @@ export default function Dashboard() {
       const totalRevenue = ests.reduce((a, e) => a + (e.total_revenue || 0), 0)
       const totalMargin = ests.reduce((a, e) => a + (e.net_margin || 0), 0)
       const avgMarginPct = ests.length ? ests.reduce((a, e) => a + (e.margin_pct || 0), 0) / ests.length : 0
-      const pipelineVal = pipes.filter(p => p.stage !== 'lost').reduce((a, p) => a + (p.value || 0), 0)
+      const pipelineVal = pipes.filter(p => p.stage !== 'lost').reduce((a, p) => a + (p.quote_value || 0), 0)
       const activeDeals = pipes.filter(p => !['lost', 'won'].includes(p.stage)).length
       const warmHolds = pipes.filter(p => p.stage === 'warm_hold').length
 

@@ -55,7 +55,7 @@ function WarmCard({ deal, index, onRefresh }) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     client_name: deal.client_name || '',
-    value: deal.value || '',
+    quote_value: deal.quote_value || '',
     notes: deal.notes || '',
   });
   const [saving, setSaving] = useState(false);
@@ -67,7 +67,7 @@ function WarmCard({ deal, index, onRefresh }) {
       .from('pipeline')
       .update({
         client_name: form.client_name,
-        value: parseFloat(form.value) || 0,
+        quote_value: parseFloat(form.quote_value) || 0,
         notes: form.notes,
       })
       .eq('id', deal.id);
@@ -112,9 +112,9 @@ function WarmCard({ deal, index, onRefresh }) {
               }}>
                 {deal.client_name || 'Unnamed Contact'}
               </div>
-              {deal.value > 0 && (
+              {deal.quote_value > 0 && (
                 <div style={{ fontSize: 12, color: '#a8883c', marginTop: 1, fontFamily: "'DM Sans', sans-serif" }}>
-                  {formatValue(deal.value)}
+                  {formatValue(deal.quote_value)}
                 </div>
               )}
             </div>
@@ -179,8 +179,8 @@ function WarmCard({ deal, index, onRefresh }) {
                 <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 2 }}>Est. Value (CAD)</label>
                 <input
                   type="number" min="0" step="0.01"
-                  value={form.value}
-                  onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
+                  value={form.quote_value}
+                  onChange={e => setForm(f => ({ ...f, quote_value: e.target.value }))}
                   style={{
                     width: '100%', boxSizing: 'border-box', padding: '6px 8px',
                     fontSize: 13, border: '1px solid #d1d5db', borderRadius: 5,
@@ -202,7 +202,7 @@ function WarmCard({ deal, index, onRefresh }) {
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                   <button
                     type="button"
-                    onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', value: deal.value || '', notes: deal.notes || '' }); }}
+                    onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
                     style={{
                       padding: '5px 12px', fontSize: 12, borderRadius: 5,
                       border: '1px solid #d1d5db', background: '#f9fafb',
@@ -236,7 +236,7 @@ function WarmCard({ deal, index, onRefresh }) {
 }
 
 export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddContact }) {
-  const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.value) || 0), 0);
+  const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.quote_value) || 0), 0);
   const overdueCount = deals.filter(d => daysSince(d.created_at) > 60).length;
 
   return (

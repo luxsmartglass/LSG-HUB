@@ -32,7 +32,7 @@ export default function DealCard({ deal, index, onRefresh }) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     client_name: deal.client_name || '',
-    value: deal.value || '',
+    quote_value: deal.quote_value || '',
     notes: deal.notes || '',
   });
   const [saving, setSaving] = useState(false);
@@ -47,7 +47,7 @@ export default function DealCard({ deal, index, onRefresh }) {
         setEditing(false);
         setForm({
           client_name: deal.client_name || '',
-          value: deal.value || '',
+          quote_value: deal.quote_value || '',
           notes: deal.notes || '',
         });
       }
@@ -63,7 +63,7 @@ export default function DealCard({ deal, index, onRefresh }) {
       .from('pipeline')
       .update({
         client_name: form.client_name,
-        value: parseFloat(form.value) || 0,
+        quote_value: parseFloat(form.quote_value) || 0,
         notes: form.notes,
       })
       .eq('id', deal.id);
@@ -127,7 +127,7 @@ export default function DealCard({ deal, index, onRefresh }) {
                 marginTop: 2,
                 fontFamily: "'DM Sans', sans-serif",
               }}>
-                {formatValue(deal.value)}
+                {formatValue(deal.quote_value)}
               </div>
             </div>
             {/* Edit button */}
@@ -236,8 +236,8 @@ export default function DealCard({ deal, index, onRefresh }) {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={form.value}
-                  onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
+                  value={form.quote_value}
+                  onChange={e => setForm(f => ({ ...f, quote_value: e.target.value }))}
                   style={{
                     width: '100%',
                     boxSizing: 'border-box',
@@ -274,7 +274,7 @@ export default function DealCard({ deal, index, onRefresh }) {
                     type="button"
                     onClick={() => {
                       setEditing(false);
-                      setForm({ client_name: deal.client_name || '', value: deal.value || '', notes: deal.notes || '' });
+                      setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' });
                     }}
                     style={{
                       padding: '5px 12px',

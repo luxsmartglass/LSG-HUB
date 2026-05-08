@@ -7,7 +7,7 @@ import DealCard from './DealCard';
 import WarmHoldColumn from './WarmHoldColumn';
 
 function formatColValue(deals) {
-  const total = deals.reduce((s, d) => s + (parseFloat(d.value) || 0), 0);
+  const total = deals.reduce((s, d) => s + (parseFloat(d.quote_value) || 0), 0);
   if (total === 0) return null;
   return '$' + total.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
