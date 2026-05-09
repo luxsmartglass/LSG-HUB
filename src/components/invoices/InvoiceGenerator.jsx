@@ -104,6 +104,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
     return {
       ...(form.id ? { id: form.id } : {}),
       invoice_number: form.invoice_number,
+      type:           'invoice',
       client_name:    form.client_name,
       estimate_id:    form.estimate_id || null,
       due_date:       form.due_date || null,
