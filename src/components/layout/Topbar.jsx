@@ -18,12 +18,12 @@ export default function Topbar({ session }) {
 
   return (
     <div style={{
-      height:56, minHeight:56, background:'#fff',
-      borderBottom:'1px solid #e5ddd0',
+      height:56, minHeight:56, background:'#1c2b4a',
+      borderBottom:'1px solid rgba(255,255,255,0.08)',
       display:'flex', alignItems:'center', justifyContent:'space-between',
-      padding:'0 28px', boxShadow:'0 1px 3px rgba(0,0,0,0.04)'
+      padding:'0 28px', boxShadow:'0 1px 8px rgba(0,0,0,0.3)'
     }}>
-      <div style={{ fontFamily:"'Playfair Display',serif", fontSize:19, fontWeight:600, color:'#1c2b4a' }}>{title}</div>
+      <div style={{ fontFamily:"'Playfair Display',serif", fontSize:19, fontWeight:600, color:'#f4f1eb' }}>{title}</div>
       <div style={{ display:'flex', alignItems:'center', gap:10 }}>
         <span id="sync-indicator" style={{ fontSize:12, color:'#9ca3af', transition:'color 0.2s' }} />
         {!isEstimator && (

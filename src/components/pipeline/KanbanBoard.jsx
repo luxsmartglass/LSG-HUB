@@ -115,15 +115,16 @@ function LossReasonModal({ onConfirm, onCancel }) {
       zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
-        background: '#fff', borderRadius: 12, padding: '28px 28px 24px',
+        background: '#162238', borderRadius: 12, padding: '28px 28px 24px',
         width: 380, maxWidth: '90vw',
-        boxShadow: '0 16px 64px rgba(0,0,0,0.3)',
+        boxShadow: '0 16px 64px rgba(0,0,0,0.6)',
+        border: '1px solid rgba(255,255,255,0.1)',
         fontFamily: "'DM Sans', sans-serif",
       }}>
-        <div style={{ fontWeight: 700, fontSize: 16, color: '#1c2b4a', marginBottom: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: '#f4f1eb', marginBottom: 6 }}>
           Mark as Lost
         </div>
-        <div style={{ fontSize: 13, color: '#6b7280', marginBottom: 14 }}>
+        <div style={{ fontSize: 13, color: 'rgba(244,241,235,0.5)', marginBottom: 14 }}>
           What was the reason for losing this deal?
         </div>
         <textarea
@@ -135,9 +136,10 @@ function LossReasonModal({ onConfirm, onCancel }) {
           style={{
             width: '100%', boxSizing: 'border-box',
             padding: '10px 12px', fontSize: 13,
-            border: '1.5px solid #d1d5db', borderRadius: 7,
+            border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: 7,
             outline: 'none', resize: 'vertical',
-            color: '#1c2b4a', fontFamily: "'DM Sans', sans-serif",
+            color: '#f4f1eb', background: 'rgba(255,255,255,0.07)',
+            fontFamily: "'DM Sans', sans-serif",
             marginBottom: 16,
           }}
         />
@@ -146,8 +148,8 @@ function LossReasonModal({ onConfirm, onCancel }) {
             onClick={onCancel}
             style={{
               padding: '8px 18px', fontSize: 13, borderRadius: 7,
-              border: '1px solid #d1d5db', background: '#f9fafb',
-              color: '#6b7280', cursor: 'pointer',
+              border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
+              color: 'rgba(244,241,235,0.6)', cursor: 'pointer',
               fontFamily: "'DM Sans', sans-serif",
             }}
           >

@@ -7,7 +7,7 @@ export default function Layout({ children, session }) {
       <Sidebar session={session} />
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
         <Topbar session={session} />
-        <main id="content" style={{ flex:1, overflowY:'auto', padding:28, background:'#f4f1eb' }}>
+        <main id="content" style={{ flex:1, overflowY:'auto', padding:28, background:'#0f1d35' }}>
           {children}
         </main>
       </div>
