@@ -72,10 +72,6 @@ export default function Estimator() {
     try {
       const record = {
         client_name: w.client_name,
-        org: w.org || '',
-        email: w.email || '',
-        phone: w.phone || '',
-        notes: w.notes || '',
         project_address: w.address || '',
         zones: w.zones,
         film_price: w.film_price,
@@ -96,11 +92,13 @@ export default function Estimator() {
         updated_at: new Date().toISOString()
       }
       if (id) {
-        await supabase.from('estimates').update(record).eq('id', id)
+        const { error } = await supabase.from('estimates').update(record).eq('id', id)
+        if (error) { toast('Save failed: ' + error.message, 'error'); return }
         toast('Estimate updated!')
         setSavedEstimate({ ...w, id, total_revenue: calc.totalRev, total_cost: calc.totalCost, net_margin: calc.netMargin, margin_pct: calc.marginPct, shipping: calc.shipping, transformer: calc.tf })
       } else {
-        const { data } = await supabase.from('estimates').insert(record).select().single()
+        const { data, error } = await supabase.from('estimates').insert(record).select().single()
+        if (error) { toast('Save failed: ' + error.message, 'error'); return }
         toast('Estimate saved!')
         if (data?.id) navigate(`/estimator/${data.id}`, { replace: true })
         setSavedEstimate({ ...w, id: data?.id, total_revenue: calc.totalRev, total_cost: calc.totalCost, net_margin: calc.netMargin, margin_pct: calc.marginPct, shipping: calc.shipping, transformer: calc.tf })
