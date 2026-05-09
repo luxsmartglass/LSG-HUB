@@ -57,22 +57,24 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
     boxSizing: 'border-box',
     padding: '9px 12px',
     fontSize: 13.5,
-    border: '1.5px solid #d1d5db',
+    border: '1px solid rgba(255,255,255,0.15)',
     borderRadius: 7,
     outline: 'none',
-    color: '#1c2b4a',
+    color: '#f4f1eb',
     fontFamily: "'DM Sans', sans-serif",
     marginBottom: 12,
-    background: '#fafafa',
+    background: 'rgba(255,255,255,0.07)',
   };
 
   const labelStyle = {
     display: 'block',
-    fontSize: 11.5,
-    fontWeight: 600,
-    color: '#6b7280',
-    marginBottom: 4,
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#c9a84c',
+    marginBottom: 5,
     fontFamily: "'DM Sans', sans-serif",
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
   };
 
   return (
@@ -84,25 +86,26 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
       padding: '0 16px',
     }}>
       <div style={{
-        background: '#fff',
+        background: '#162238',
         borderRadius: 14,
         padding: '28px 28px 24px',
         width: 420,
         maxWidth: '100%',
-        boxShadow: '0 20px 64px rgba(0,0,0,0.28)',
+        boxShadow: '0 20px 64px rgba(0,0,0,0.5)',
         fontFamily: "'DM Sans', sans-serif",
+        border: '1px solid rgba(201,168,76,0.2)',
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 18, color: '#1c2b4a' }}>New Deal</div>
-            <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 1 }}>Add to pipeline</div>
+            <div style={{ fontWeight: 800, fontSize: 18, color: '#f4f1eb' }}>New Deal</div>
+            <div style={{ fontSize: 12, color: 'rgba(244,241,235,0.45)', marginTop: 1 }}>Add to pipeline</div>
           </div>
           <button
             onClick={onClose}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 22, color: '#9ca3af', padding: '2px 8px',
+              fontSize: 22, color: 'rgba(244,241,235,0.5)', padding: '2px 8px',
               borderRadius: 6, lineHeight: 1,
             }}
             aria-label="Close"
@@ -157,9 +160,9 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
               type="button"
               onClick={onClose}
               style={{
-                padding: '9px 20px', fontSize: 13.5, borderRadius: 8,
-                border: '1px solid #d1d5db', background: '#f9fafb',
-                color: '#6b7280', cursor: 'pointer',
+                padding: '9px 18px', fontSize: 13.5, borderRadius: 7,
+                border: '1px solid rgba(255,255,255,0.2)', background: 'transparent',
+                color: 'rgba(244,241,235,0.7)', cursor: 'pointer',
                 fontFamily: "'DM Sans', sans-serif",
               }}
             >
@@ -169,10 +172,10 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
               type="submit"
               disabled={saving}
               style={{
-                padding: '9px 22px', fontSize: 13.5, fontWeight: 700, borderRadius: 8,
+                padding: '9px 22px', fontSize: 13.5, fontWeight: 700, borderRadius: 7,
                 border: 'none',
-                background: saving ? '#e5c97c' : '#c9a84c',
-                color: '#fff', cursor: saving ? 'not-allowed' : 'pointer',
+                background: saving ? '#b8943e' : '#c9a84c',
+                color: '#1c2b4a', cursor: saving ? 'not-allowed' : 'pointer',
                 fontFamily: "'DM Sans', sans-serif",
                 transition: 'background 0.15s',
               }}
