@@ -41,7 +41,7 @@ export default function Invoices() {
     setLoading(true)
     const [invRes, estRes] = await Promise.all([
       supabase.from('invoices').select('*').order('created_at', { ascending: false }),
-      supabase.from('estimates').select('id, estimate_number, client_name, items, subtotal, total').order('created_at', { ascending: false }),
+      supabase.from('estimates').select('id, client_name, zones, film_price, glass_price, total_revenue').order('created_at', { ascending: false }),
     ])
     if (invRes.error) addToast('Failed to load invoices', 'error')
     else setInvoices(invRes.data || [])
@@ -119,9 +119,9 @@ export default function Invoices() {
   }
 
   // Summary stats
-  const totalInvoiced = invoices.reduce((s, i) => s + (i.total || 0), 0)
-  const totalPaid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total || 0), 0)
-  const totalOutstanding = invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + (i.total || 0), 0)
+  const totalInvoiced = invoices.reduce((s, i) => s + (i.total_amount || 0), 0)
+  const totalPaid = invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.total_amount || 0), 0)
+  const totalOutstanding = invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + (i.total_amount || 0), 0)
   const overdueCount = invoices.filter(i =>
     i.status !== 'paid' && i.due_date && i.due_date < today
   ).length

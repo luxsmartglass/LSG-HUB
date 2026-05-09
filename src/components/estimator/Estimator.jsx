@@ -50,7 +50,7 @@ export default function Estimator() {
 
   async function loadEstimate(estId) {
     const { data } = await supabase.from('estimates').select('*').eq('id', estId).single()
-    if (data) setW({ ...DEFAULT_WIZARD, ...data, step: 1 })
+    if (data) setW({ ...DEFAULT_WIZARD, ...data, address: data.project_address || '', step: 1 })
   }
 
   function set(key, val) { setW(prev => ({ ...prev, [key]: val })) }
@@ -71,16 +71,29 @@ export default function Estimator() {
     setSaving(true)
     try {
       const record = {
-        client_name: w.client_name, address: w.address, org: w.org,
-        email: w.email, phone: w.phone, type: w.type,
-        zones: w.zones, film_price: w.film_price, glass_price: w.glass_price,
-        install_rate: w.install_rate, complexity: w.complexity, notes: w.notes,
-        incl_electrician: w.incl_electrician, use_dimming: w.use_dimming,
-        discount: w.discount, discount_pct: w.discount_pct,
-        transformer: calc.tf, total_revenue: calc.totalRev,
-        total_cost: calc.totalCost, net_margin: calc.netMargin,
-        margin_pct: calc.marginPct, shipping: calc.shipping,
-        status: w.status || 'Draft', updated_at: new Date().toISOString()
+        client_name: w.client_name,
+        org: w.org || '',
+        email: w.email || '',
+        phone: w.phone || '',
+        notes: w.notes || '',
+        project_address: w.address || '',
+        zones: w.zones,
+        film_price: w.film_price,
+        glass_price: w.glass_price,
+        install_rate: w.install_rate,
+        complexity: w.complexity,
+        incl_electrician: w.incl_electrician,
+        use_dimming: w.use_dimming,
+        discount: w.discount,
+        discount_pct: w.discount_pct,
+        transformer: calc.tf,
+        total_revenue: calc.totalRev,
+        total_cost: calc.totalCost,
+        net_margin: calc.netMargin,
+        margin_pct: calc.marginPct,
+        shipping: calc.shipping,
+        status: w.status || 'Draft',
+        updated_at: new Date().toISOString()
       }
       if (id) {
         await supabase.from('estimates').update(record).eq('id', id)
@@ -89,6 +102,7 @@ export default function Estimator() {
       } else {
         const { data } = await supabase.from('estimates').insert(record).select().single()
         toast('Estimate saved!')
+        if (data?.id) navigate(`/estimator/${data.id}`, { replace: true })
         setSavedEstimate({ ...w, id: data?.id, total_revenue: calc.totalRev, total_cost: calc.totalCost, net_margin: calc.netMargin, margin_pct: calc.marginPct, shipping: calc.shipping, transformer: calc.tf })
       }
     } catch (e) {

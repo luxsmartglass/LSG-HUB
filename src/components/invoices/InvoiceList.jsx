@@ -55,7 +55,7 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
           {sorted.map(inv => {
             const { bg, color, label } = statusStyle(inv.status, inv.due_date)
             const isHovered = hoveredRow === inv.id
-            const isSent = (inv.status || '').toLowerCase() === 'sent'
+            const canMarkPaid = !['paid'].includes((inv.status || '').toLowerCase())
 
             return (
               <tr
@@ -86,11 +86,11 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                   {fmtDate(inv.due_date)}
                 </td>
                 <td style={{ padding: '14px 16px', color: CREAM, fontWeight: 600 }}>
-                  {fmtMoney(inv.total)}
+                  {fmtMoney(inv.total_amount)}
                 </td>
                 <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.7)' }}>
-                  {inv.deposit_paid
-                    ? <span style={{ color: '#6ee7b7' }}>✓ {fmtMoney(inv.total * (inv.deposit_pct || 50) / 100)}</span>
+                  {inv.paid_date
+                    ? <span style={{ color: '#6ee7b7' }}>✓ {fmtMoney((inv.total_amount || 0) * (inv.deposit_pct || 50) / 100)}</span>
                     : <span style={{ color: 'rgba(244,241,235,0.35)' }}>—</span>
                   }
                 </td>
@@ -107,7 +107,7 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                   onClick={e => e.stopPropagation()}
                 >
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    {isSent && (
+                    {canMarkPaid && (
                       <button
                         onClick={() => onMarkPaid(inv.id)}
                         style={{

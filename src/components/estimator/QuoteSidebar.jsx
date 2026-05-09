@@ -13,7 +13,7 @@ export default function QuoteSidebar({ calc, w }) {
             {z.type}
             <div style={{ fontSize: 11, color: '#9ca3af' }}>{(parseFloat(z.sqm) || 0).toFixed(1)} sqm</div>
           </div>
-          <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>{fmtCAD((parseFloat(z.sqm) || 0) * (w.film_price || 700))}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}>{fmtCAD((parseFloat(z.sqm) || 0) * (['Sauna', 'Window (Exterior)'].includes(z.type) ? (w.glass_price || 1050) : (w.film_price || 700)))}</div>
         </div>
       ))}
 

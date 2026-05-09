@@ -164,7 +164,7 @@ export default function Dashboard() {
                 <button onClick={() => navigate('/estimates')} style={{ fontSize: 12.5, color: '#9ca3af', background: 'none', border: '1px solid #e5ddd0', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>View All</button>
               </div>
               {recentEstimates.map(e => (
-                <div key={e.created_at} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f0ebe3' }}>
+                <div key={e.id || e.created_at} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f0ebe3' }}>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1c2b4a' }}>{e.client_name}</div>
                     <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 2 }}>{timeAgo(e.created_at)}</div>

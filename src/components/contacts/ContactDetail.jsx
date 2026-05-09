@@ -86,7 +86,7 @@ export default function ContactDetail({ contact, onClose, onUpdate }) {
 
     supabase
       .from('estimates')
-      .select('id, estimate_number, total, status, created_at')
+      .select('id, total_revenue, status, created_at')
       .ilike('client_name', `%${contact.name}%`)
       .then(({ data }) => setEstimates(data || []))
 
@@ -124,11 +124,10 @@ export default function ContactDetail({ contact, onClose, onUpdate }) {
 
   const handleAddToPipeline = async () => {
     const { error } = await supabase.from('pipeline').insert({
-      contact_id: contact.id,
-      contact_name: contact.name,
-      company: contact.company,
-      status: 'Lead',
-      source: contact.source,
+      client_name: contact.name,
+      stage: 'New Lead',
+      source: contact.source || '',
+      notes: contact.company ? `Company: ${contact.company}` : '',
     })
     if (error) {
       addToast('Failed to add to pipeline: ' + error.message, 'error')
@@ -259,10 +258,10 @@ export default function ContactDetail({ contact, onClose, onUpdate }) {
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <span style={{ color: CREAM, fontSize: 13, fontWeight: 600 }}>
-                  #{est.estimate_number}
+                  EST-{String(est.id).slice(0, 6).toUpperCase()}
                 </span>
                 <span style={{ color: 'rgba(244,241,235,0.6)', fontSize: 13 }}>
-                  ${(est.total || 0).toLocaleString()}
+                  ${(est.total_revenue || 0).toLocaleString()}
                 </span>
                 <span style={{
                   fontSize: 11, padding: '2px 8px', borderRadius: 10, fontWeight: 600,

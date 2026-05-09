@@ -51,7 +51,7 @@ export default function EstimatePDF({ estimate, onClose }) {
     installTotal += sqm * installRate * complexity
   })
 
-  const tfCost = e.transformer || 0
+  const tfCost = e.transformer?.recTotal || 0
   const electrician = e.incl_electrician ? 977 : 0
 
   return (
@@ -109,7 +109,7 @@ export default function EstimatePDF({ estimate, onClose }) {
               <div style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>Prepared For</div>
               <div style={{ fontSize: 15, fontWeight: 600, color: '#1c2b4a' }}>{e.client_name || '—'}</div>
               {e.org && <div style={{ fontSize: 13, color: '#4b5563' }}>{e.org}</div>}
-              {e.address && <div style={{ fontSize: 13, color: '#4b5563' }}>{e.address}</div>}
+              {e.project_address && <div style={{ fontSize: 13, color: '#4b5563' }}>{e.project_address}</div>}
               <div style={{ fontSize: 13, color: '#4b5563', marginTop: 2 }}>
                 {[e.email, e.phone].filter(Boolean).join(' | ') || ''}
               </div>

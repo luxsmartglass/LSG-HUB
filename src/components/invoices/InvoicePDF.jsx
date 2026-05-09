@@ -31,11 +31,13 @@ export default function InvoicePDF({ invoice, onClose, onEdit, settings = {} }) 
     website: settings.company_website || 'luxsmartglass.ca',
   }
 
-  const items = Array.isArray(invoice.items) ? invoice.items : []
-  const subtotal    = items.reduce((s, it) => s + (parseFloat(it.qty) || 0) * (parseFloat(it.unit_price) || 0), 0)
-  const taxPct      = parseFloat(invoice.tax_pct) || 13
-  const taxAmt      = subtotal * taxPct / 100
-  const total       = subtotal + taxAmt
+  const items       = Array.isArray(invoice.line_items) ? invoice.line_items : []
+  const subtotal    = invoice.subtotal != null
+    ? parseFloat(invoice.subtotal)
+    : items.reduce((s, it) => s + (parseFloat(it.qty) || 0) * (parseFloat(it.unit_price) || 0), 0)
+  const taxPct      = parseFloat(invoice.tax_pct) || (invoice.hst_amount && subtotal ? (invoice.hst_amount / subtotal * 100) : 13)
+  const taxAmt      = invoice.hst_amount != null ? parseFloat(invoice.hst_amount) : subtotal * taxPct / 100
+  const total       = invoice.total_amount != null ? parseFloat(invoice.total_amount) : subtotal + taxAmt
   const depositPct  = parseFloat(invoice.deposit_pct) || 50
   const depositAmt  = total * depositPct / 100
   const balanceDue  = total - depositAmt
@@ -281,8 +283,8 @@ export default function InvoicePDF({ invoice, onClose, onEdit, settings = {} }) 
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ color: '#555', fontSize: 13 }}>Deposit Status</span>
-              <span style={{ fontWeight: 700, color: invoice.deposit_paid ? '#059669' : '#d97706', fontSize: 13 }}>
-                {invoice.deposit_paid ? '✓ Received' : 'Pending'}
+              <span style={{ fontWeight: 700, color: invoice.paid_date ? '#059669' : '#d97706', fontSize: 13 }}>
+                {invoice.paid_date ? '✓ Received' : 'Pending'}
               </span>
             </div>
             <div style={{ height: 1, background: '#e5e0d8', margin: '8px 0' }} />

@@ -30,16 +30,18 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
   const addToast = useToast()
 
   const [form, setForm] = useState({
-    invoice_number: invoice?.invoice_number || generateInvoiceNumber(),
-    client_name:    invoice?.client_name || '',
-    estimate_id:    invoice?.estimate_id || '',
-    items:          invoice?.items || [{ description: '', qty: 1, unit_price: 0 }],
-    tax_pct:        invoice?.tax_pct ?? parseFloat(settings.default_tax_rate) ?? 13,
-    deposit_pct:    invoice?.deposit_pct ?? parseFloat(settings.default_deposit_pct) ?? 50,
-    deposit_paid:   invoice?.deposit_paid ?? false,
-    due_date:       invoice?.due_date || '',
-    notes:          invoice?.notes || '',
-    status:         invoice?.status || 'draft',
+    invoice_number:  invoice?.invoice_number || generateInvoiceNumber(),
+    client_name:     invoice?.client_name || '',
+    estimate_id:     invoice?.estimate_id || '',
+    line_items:      invoice?.line_items || [{ description: '', qty: 1, unit_price: 0 }],
+    tax_pct:         invoice?.hst_amount != null && invoice?.subtotal
+                       ? ((invoice.hst_amount / invoice.subtotal) * 100).toFixed(1)
+                       : parseFloat(settings.default_tax_rate) ?? 13,
+    deposit_pct:     invoice?.deposit_pct ?? parseFloat(settings.default_deposit_pct) ?? 50,
+    deposit_paid_ui: invoice?.paid_date ? true : false,
+    due_date:        invoice?.due_date || '',
+    notes:           invoice?.notes || '',
+    status:          invoice?.status || 'draft',
     ...(invoice?.id ? { id: invoice.id } : {}),
   })
 
@@ -52,49 +54,80 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
     const est = estimates.find(es => String(es.id) === String(estId))
     if (!est) return
     setField('client_name', est.client_name || form.client_name)
-    const items = Array.isArray(est.items)
-      ? est.items.map(it => ({
-          description: it.description || it.name || '',
-          qty: it.qty || it.quantity || 1,
-          unit_price: it.unit_price || it.price || it.total || 0,
+    // Estimates store zones, not line_items — build line items from zones
+    const line_items = Array.isArray(est.zones) && est.zones.length > 0
+      ? est.zones.map(z => ({
+          description: `${z.type} — ${z.sqm} sqm`,
+          qty: 1,
+          unit_price: parseFloat(z.sqm) * (
+            ['Sauna', 'Window (Exterior)'].includes(z.type)
+              ? (est.glass_price || 1050)
+              : (est.film_price || 700)
+          ),
         }))
-      : [{ description: '', qty: 1, unit_price: 0 }]
-    setField('items', items)
+      : [{ description: '', qty: 1, unit_price: est.total_revenue || 0 }]
+    setField('line_items', line_items)
   }
 
   const updateItem = (i, key, val) => {
-    const updated = form.items.map((it, idx) =>
+    const updated = form.line_items.map((it, idx) =>
       idx === i ? { ...it, [key]: val } : it
     )
-    setField('items', updated)
+    setField('line_items', updated)
   }
 
-  const addItem = () => setField('items', [...form.items, { description: '', qty: 1, unit_price: 0 }])
+  const addItem = () => setField('line_items', [...form.line_items, { description: '', qty: 1, unit_price: 0 }])
 
   const removeItem = (i) => {
-    if (form.items.length === 1) return
-    setField('items', form.items.filter((_, idx) => idx !== i))
+    if (form.line_items.length === 1) return
+    setField('line_items', form.line_items.filter((_, idx) => idx !== i))
   }
 
-  const subtotal = form.items.reduce((s, it) => {
+  const subtotal = form.line_items.reduce((s, it) => {
     const qty = parseFloat(it.qty) || 0
     const price = parseFloat(it.unit_price) || 0
     return s + qty * price
   }, 0)
 
   const taxAmt      = subtotal * (parseFloat(form.tax_pct) || 0) / 100
-  const total       = subtotal + taxAmt
-  const depositAmt  = total * (parseFloat(form.deposit_pct) || 0) / 100
-  const balanceDue  = total - depositAmt
+  const total_amount = subtotal + taxAmt
+  const depositAmt  = total_amount * (parseFloat(form.deposit_pct) || 0) / 100
+  const balanceDue  = total_amount - depositAmt
 
   const fmt = (n) => '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
+  const buildRecord = (statusOverride) => {
+    const hst_amount = subtotal * (parseFloat(form.tax_pct) || 13) / 100
+    const computed_total = subtotal + hst_amount
+    const deposit_amount = computed_total * (parseFloat(form.deposit_pct) || 50) / 100
+    const amount_due = form.deposit_paid_ui ? computed_total - deposit_amount : computed_total
+    return {
+      ...(form.id ? { id: form.id } : {}),
+      invoice_number: form.invoice_number,
+      client_name:    form.client_name,
+      estimate_id:    form.estimate_id || null,
+      due_date:       form.due_date || null,
+      line_items:     form.line_items,
+      deposit_pct:    parseFloat(form.deposit_pct) || 50,
+      subtotal,
+      hst_amount,
+      hst_enabled:    (parseFloat(form.tax_pct) || 0) > 0,
+      tax_pct:        parseFloat(form.tax_pct) || 0,
+      total_amount:   computed_total,
+      amount_due,
+      paid_date:      form.deposit_paid_ui ? new Date().toISOString() : null,
+      status:         statusOverride || form.status || 'draft',
+      notes:          form.notes || '',
+      updated_at:     new Date().toISOString(),
+    }
+  }
+
   const handleSaveDraft = () => {
-    onSave({ ...form, subtotal, tax_pct: form.tax_pct, total, status: 'draft' })
+    onSave(buildRecord('draft'))
   }
 
   const handleGeneratePDF = () => {
-    onSave({ ...form, subtotal, tax_pct: form.tax_pct, total, status: form.status === 'draft' ? 'sent' : form.status })
+    onSave(buildRecord(form.status === 'draft' ? 'sent' : form.status))
   }
 
   return (
@@ -163,7 +196,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                 <option value="">— None —</option>
                 {estimates.map(est => (
                   <option key={est.id} value={est.id}>
-                    #{est.estimate_number} — {est.client_name}
+                    EST-{String(est.id).slice(0, 6).toUpperCase()} — {est.client_name}
                   </option>
                 ))}
               </select>
@@ -199,7 +232,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                 </tr>
               </thead>
               <tbody>
-                {form.items.map((item, i) => {
+                {form.line_items.map((item, i) => {
                   const lineTotal = (parseFloat(item.qty) || 0) * (parseFloat(item.unit_price) || 0)
                   return (
                     <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -236,12 +269,12 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                       <td style={{ padding: '8px 6px' }}>
                         <button
                           onClick={() => removeItem(i)}
-                          disabled={form.items.length === 1}
+                          disabled={form.line_items.length === 1}
                           style={{
                             background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.25)',
                             color: '#fca5a5', borderRadius: 6, padding: '4px 8px',
-                            cursor: form.items.length === 1 ? 'not-allowed' : 'pointer',
-                            opacity: form.items.length === 1 ? 0.4 : 1, fontSize: 13
+                            cursor: form.line_items.length === 1 ? 'not-allowed' : 'pointer',
+                            opacity: form.line_items.length === 1 ? 0.4 : 1, fontSize: 13
                           }}
                         >✕</button>
                       </td>
@@ -293,8 +326,8 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
             <input
               type="checkbox"
               id="deposit_paid"
-              checked={form.deposit_paid}
-              onChange={e => setField('deposit_paid', e.target.checked)}
+              checked={form.deposit_paid_ui}
+              onChange={e => setField('deposit_paid_ui', e.target.checked)}
               style={{ width: 16, height: 16, accentColor: GOLD, cursor: 'pointer' }}
             />
             <label htmlFor="deposit_paid" style={{ color: CREAM, fontSize: 14, cursor: 'pointer' }}>
@@ -323,7 +356,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
             {[
               ['Subtotal', fmt(subtotal)],
               [`Tax (${form.tax_pct}%)`, fmt(taxAmt)],
-              ['Total', fmt(total)],
+              ['Total', fmt(total_amount)],
               [`Deposit Required (${form.deposit_pct}%)`, fmt(depositAmt)],
               ['Balance Due', fmt(balanceDue)],
             ].map(([label, value], i) => (
