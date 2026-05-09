@@ -38,7 +38,7 @@ export default function Splash({ onComplete }) {
       })
 
       vid.addEventListener('timeupdate', () => {
-        if (vid.duration && vid.currentTime >= vid.duration - 1.0) {
+        if (vid.duration > 1 && vid.currentTime > 0 && vid.currentTime >= vid.duration - 1.0) {
           triggerIris()
         }
       })
@@ -93,26 +93,27 @@ export default function Splash({ onComplete }) {
         }}
       />
 
-      {/* Video — fullscreen cover, z-index 10, shown after tap */}
-      {tapped && (
-        <video
-          ref={videoRef}
-          src="/intro.mp4"
-          playsInline
-          muted
-          style={{
-            position: 'fixed',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: 10,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
+      {/* Video — always in DOM so browser preloads it; invisible until tapped */}
+      <video
+        ref={videoRef}
+        src="/intro.mp4"
+        preload="auto"
+        playsInline
+        muted
+        style={{
+          position: 'fixed',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 10,
+          pointerEvents: 'none',
+          opacity: tapped ? 1 : 0,
+          transition: 'opacity 0.3s',
+        }}
+      />
 
-      {/* Audio — not tied to video end */}
+      {/* Audio — always in DOM so browser preloads it */}
       <audio ref={audioRef} src="/intro.mp3" preload="auto" />
 
       {/* Tap gate — shown until tapped */}
