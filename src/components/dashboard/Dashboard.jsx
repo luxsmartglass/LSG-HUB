@@ -100,7 +100,7 @@ export default function Dashboard() {
         <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'rgba(201,168,76,0.07)', filter: 'blur(60px)', top: -80, right: -40, pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
-            {greeting()}, Arsh &amp; Ammar 👋
+            {greeting()}, LSG 👋
           </div>
           <div style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.45)', marginBottom: 16 }}>{dateStr}</div>
           <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 38, fontWeight: 400, color: '#c9a84c', letterSpacing: 2 }}>{timeStr}</div>

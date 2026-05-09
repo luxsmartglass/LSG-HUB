@@ -67,7 +67,7 @@ export default function Sidebar({ session }) {
             : <div style={{ width:28, height:28, borderRadius:'50%', background:'rgba(201,168,76,0.3)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:'#c9a84c' }}>{initials}</div>
           }
           <div>
-            <div style={{ fontSize:12.5, fontWeight:600, color:'rgba(255,255,255,0.8)' }}>{user?.user_metadata?.full_name || 'Arsh & Ammar'}</div>
+            <div style={{ fontSize:12.5, fontWeight:600, color:'rgba(255,255,255,0.8)' }}>{user?.user_metadata?.full_name || 'LSG'}</div>
             <div style={{ fontSize:10.5, color:'rgba(255,255,255,0.35)' }}>Lux Smart Glass</div>
           </div>
         </div>
