@@ -28,7 +28,6 @@ export default function Splash({ onComplete }) {
 
     if (vid) {
       vid.play().catch(() => {
-        // Video failed to play — skip intro after 500ms
         setTimeout(() => {
           if (!dismissedRef.current) {
             dismissedRef.current = true
@@ -56,7 +55,6 @@ export default function Splash({ onComplete }) {
         }, 500)
       }, { once: true })
     } else {
-      // No video element — skip after 500ms
       setTimeout(() => handleDone(), 500)
     }
 
@@ -67,12 +65,11 @@ export default function Splash({ onComplete }) {
     }
   }
 
-  // When iris finishes (1.2s transition), clean up and call onComplete
   useEffect(() => {
     if (!irisOpen) return
     const timer = setTimeout(() => {
       handleDone()
-    }, 1200)
+    }, 1500)
     return () => clearTimeout(timer)
   }, [irisOpen])
 
@@ -80,20 +77,22 @@ export default function Splash({ onComplete }) {
 
   return (
     <>
-      {/* Iris wrapper — children (app) rendered behind video, revealed by iris animation */}
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 5,
-          clipPath: irisOpen ? 'circle(150% at 50% 50%)' : 'circle(0% at 50% 50%)',
-          transition: irisOpen ? 'clip-path 1.2s ease-in-out' : 'none',
-          background: 'transparent',
-          pointerEvents: 'none',
-        }}
-      />
+      <style>{`
+        @keyframes tapPulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.35; }
+        }
+        @keyframes textFadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes lineDraw {
+          from { width: 0; opacity: 0; }
+          to   { width: 48px; opacity: 1; }
+        }
+      `}</style>
 
-      {/* Video — always in DOM so browser preloads it; invisible until tapped */}
+      {/* Video — always in DOM for preloading; invisible until tapped */}
       <video
         ref={videoRef}
         src="/intro.mp4"
@@ -109,14 +108,102 @@ export default function Splash({ onComplete }) {
           zIndex: 10,
           pointerEvents: 'none',
           opacity: tapped ? 1 : 0,
-          transition: 'opacity 0.3s',
+          transition: 'opacity 0.4s',
         }}
       />
 
-      {/* Audio — always in DOM so browser preloads it */}
+      {/* Text overlay — appears over video while playing */}
+      {tapped && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 11,
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          {/* LSG wordmark */}
+          <div
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: 'clamp(52px, 10vw, 88px)',
+              fontWeight: 700,
+              color: '#c9a84c',
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              textShadow: '0 0 60px rgba(201,168,76,0.35), 0 2px 30px rgba(0,0,0,0.7)',
+              animation: 'textFadeUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both',
+            }}
+          >
+            LSG
+          </div>
+
+          {/* Divider line */}
+          <div
+            style={{
+              height: 1,
+              background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)',
+              animation: 'lineDraw 0.7s ease-out 0.8s both',
+              alignSelf: 'center',
+            }}
+          />
+
+          {/* Full name */}
+          <div
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 'clamp(10px, 1.8vw, 14px)',
+              fontWeight: 400,
+              color: 'rgba(255,255,255,0.8)',
+              letterSpacing: '0.35em',
+              textTransform: 'uppercase',
+              textShadow: '0 1px 20px rgba(0,0,0,0.9)',
+              animation: 'textFadeUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.55s both',
+            }}
+          >
+            Lux Smart Glass
+          </div>
+
+          {/* Tagline */}
+          <div
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 'clamp(9px, 1.2vw, 11px)',
+              fontWeight: 300,
+              color: 'rgba(201,168,76,0.55)',
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              marginTop: 4,
+              animation: 'textFadeUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.85s both',
+            }}
+          >
+            Excellence in Every Detail
+          </div>
+        </div>
+      )}
+
+      {/* Iris circle — grows from centre outward at end of video */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 12,
+          background: '#0f1d35',
+          clipPath: irisOpen ? 'circle(150% at 50% 50%)' : 'circle(0% at 50% 50%)',
+          transition: irisOpen ? 'clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Audio */}
       <audio ref={audioRef} src="/intro.mp3" preload="auto" />
 
-      {/* Tap gate — shown until tapped */}
+      {/* Tap gate */}
       {!tapped && (
         <div
           onClick={handleTap}
@@ -126,29 +213,52 @@ export default function Splash({ onComplete }) {
             zIndex: 20,
             background: '#0f1d35',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
+            gap: 20,
           }}
         >
-          <style>{`
-            @keyframes tapPulse {
-              0%, 100% { opacity: 1; }
-              50% { opacity: 0.35; }
-            }
-          `}</style>
-          <span
+          <div
             style={{
               fontFamily: "'Playfair Display', serif",
-              fontSize: 48,
+              fontSize: 'clamp(32px, 6vw, 52px)',
+              fontWeight: 700,
               color: '#c9a84c',
-              letterSpacing: 8,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+            }}
+          >
+            LSG
+          </div>
+          <div
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 'clamp(9px, 1.4vw, 12px)',
+              fontWeight: 300,
+              color: 'rgba(255,255,255,0.4)',
+              letterSpacing: '0.3em',
+              textTransform: 'uppercase',
+              marginTop: -12,
+            }}
+          >
+            Lux Smart Glass
+          </div>
+          <span
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 'clamp(10px, 1.6vw, 13px)',
+              fontWeight: 400,
+              color: 'rgba(201,168,76,0.7)',
+              letterSpacing: '0.25em',
               textTransform: 'uppercase',
               animation: 'tapPulse 2s ease-in-out infinite',
               userSelect: 'none',
+              marginTop: 24,
             }}
           >
-            TAP TO ENTER
+            Tap to Enter
           </span>
         </div>
       )}
