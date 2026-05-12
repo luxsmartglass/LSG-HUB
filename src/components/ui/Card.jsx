@@ -14,12 +14,15 @@ export function Card({
 }) {
   const { c } = useTheme()
   const [lifted, setLifted] = useState(false)
+  const [focused, setFocused] = useState(false)
 
   const baseStyle = {
     background: c.surface,
     border: '1px solid ' + c.border,
     borderRadius: c.radius.lg,
-    boxShadow: lifted && hover ? c.shadowMd : c.shadowSm,
+    boxShadow: interactive
+      ? (focused ? '0 0 0 3px ' + c.accentSoft : (lifted && hover ? c.shadowMd : c.shadowSm))
+      : (lifted && hover ? c.shadowMd : c.shadowSm),
     transform: lifted && hover ? 'translateY(-2px)' : 'translateY(0)',
     borderColor: lifted && hover ? c.borderStrong : c.border,
     transition: 'background-color .25s, border-color .25s, box-shadow .2s, transform .2s',
@@ -53,6 +56,8 @@ export function Card({
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onFocus={interactive ? () => setFocused(true) : undefined}
+      onBlur={interactive ? () => setFocused(false) : undefined}
     >
       {header && <div style={headerStyle}>{header}</div>}
       <div style={bodyStyle}>{children}</div>

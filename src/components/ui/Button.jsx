@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useTheme } from '../../theme/useTheme'
 
-function SpinRing() {
+function SpinRing({ trackColor }) {
   return (
     <span style={{
       display: 'inline-block',
       width: 14,
       height: 14,
-      border: '2px solid rgba(255,255,255,0.3)',
+      border: '2px solid ' + trackColor,
       borderTopColor: 'currentColor',
       borderRadius: '50%',
       animation: 'spin .6s linear infinite',
@@ -126,7 +126,7 @@ export function Button({
       onMouseLeave={(e) => { handleMouseLeave(e); setHovered(false) }}
       onMouseEnter={() => setHovered(true)}
     >
-      {loading ? <SpinRing /> : icon}
+      {loading ? <SpinRing trackColor={c.border} /> : icon}
       {children}
     </Tag>
   )

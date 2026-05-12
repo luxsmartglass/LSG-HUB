@@ -48,7 +48,7 @@ export function Modal({
   if (!open) return null
 
   const width = SIZE_WIDTHS[size] || SIZE_WIDTHS.md
-  const maxHeight = size === 'full' ? '92vh' : '92vh'
+  const maxHeight = '92vh'
 
   function handleOverlayClick(e) {
     if (e.target === e.currentTarget) onClose()
