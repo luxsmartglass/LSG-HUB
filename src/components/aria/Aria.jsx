@@ -1,21 +1,17 @@
+import { useTheme } from '../../theme/useTheme'
 import AriaChat from './AriaChat'
 
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  bg: '#0f1d35',
-}
-
 export default function Aria() {
+  const { c } = useTheme()
+
   return (
-    <div style={{
+    <div className="fade-up" style={{
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      background: COLORS.bg,
+      background: c.bg,
       padding: '32px 24px',
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: c.font.body,
       boxSizing: 'border-box',
     }}>
       {/* Page Header */}
@@ -24,9 +20,9 @@ export default function Aria() {
           <div style={{
             width: 40,
             height: 40,
-            borderRadius: 10,
-            background: `linear-gradient(135deg, ${COLORS.navy} 0%, #2a3f6b 100%)`,
-            border: `1px solid ${COLORS.gold}44`,
+            borderRadius: c.radius.md,
+            background: `linear-gradient(135deg, ${c.surface} 0%, ${c.surfaceElevated} 100%)`,
+            border: `1px solid ${c.accent}44`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -36,10 +32,10 @@ export default function Aria() {
             ✦
           </div>
           <div>
-            <h1 style={{ color: COLORS.cream, fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: '-0.01em' }}>
+            <h1 style={{ color: c.textPrimary, fontSize: c.text['2xl'], fontWeight: c.weight.hero, margin: 0, letterSpacing: '-0.01em', fontFamily: c.font.heading }}>
               ARIA
             </h1>
-            <p style={{ color: '#8a9bb5', fontSize: 13, margin: 0 }}>
+            <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: 0 }}>
               AI Revenue Intelligence Assistant
             </p>
           </div>
@@ -50,14 +46,14 @@ export default function Aria() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 7,
-          background: COLORS.navy,
-          border: `1px solid ${COLORS.gold}33`,
-          borderRadius: 20,
+          background: c.surface,
+          border: `1px solid ${c.accent}33`,
+          borderRadius: c.radius.pill,
           padding: '5px 14px',
           marginTop: 6,
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: COLORS.gold, display: 'inline-block' }} />
-          <span style={{ color: '#8a9bb5', fontSize: 12 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.accent, display: 'inline-block' }} />
+          <span style={{ color: c.textMuted, fontSize: c.text.xs }}>
             ARIA has context about your pipeline, estimates, and business metrics
           </span>
         </div>
