@@ -82,7 +82,17 @@ shadow.lg  0 12px 40px rgba(20,16,32,0.12)
 gradientHero  linear-gradient(135deg, #ede9fe 0%, #f7f6fb 50%, #e0f2fe 100%)
 ```
 
-Fonts unchanged: **Playfair Display** (headings), **DM Sans** (body).
+### 3.2a Typography — heavier, more presence
+
+The current type is too thin: `DM Sans` is loaded with a 300 (Light) weight and labels sit at 400–600. We go bolder and more deliberate.
+
+- **Display / hero / page titles:** keep **Playfair Display** but use **700** (and 600 for sub-display). Big, confident serif moments only — hero greeting, page H1s, modal titles, big numbers can stay serif or move to the UI font (decided per-component for legibility at size).
+- **UI / body font:** switch from `DM Sans` to **Plus Jakarta Sans** (Google Fonts) — a geometric humanist sans with noticeably more weight presence and character than DM Sans, reads premium and modern. Load weights **500, 600, 700, 800** (drop 300/400 entirely). Agent has free rein to substitute an equivalent if it tests better (e.g. `Inter` 500–800, or a Fontshare face like `General Sans` / `Satoshi` loaded via their CDN) — the *requirement* is "no thin weights, strong but not heavy."
+- **Weight scale (tokens, applied everywhere):** body text **500** (never below); secondary/meta **500**; buttons & interactive labels **600–700**; section/eyebrow labels **700**, uppercase, `letterSpacing 0.06–0.08em`; card/stat headings **700**; hero & H1 **700–800** (Playfair 700).
+- **Sizing/rhythm:** establish a small type scale in tokens (`text.xs 11 / sm 12.5 / base 14 / md 15 / lg 18 / xl 22 / 2xl 28 / display 34–44`) and a consistent line-height set; stat numbers get tabular figures (`font-variant-numeric: tabular-nums`).
+- Antialiasing on (`-webkit-font-smoothing: antialiased`), `text-rendering: optimizeLegibility`.
+
+These belong in `tokens.js` (`font.heading`, `font.body`, `weight.*`, `text.*`, `leading.*`) so every component pulls them rather than hardcoding.
 
 ### 3.3 Migration of existing hardcoded colors
 - Replace literal hex in inline styles with `c.*` across components. Where rgba-with-alpha was used (`rgba(255,255,255,0.08)` etc.), use the matching semantic token (`c.border`, `c.surfaceHover`, …) so it flips correctly in light mode.
@@ -101,8 +111,8 @@ All consume `useTheme()`. New/standardized:
 - `Input`, `Textarea`, `Select` — themed; focus ring uses `accent`; consistent sizing; `error` state.
 - `Modal` — fixed overlay (`c.overlay`, `backdrop-filter: blur(2px)`), centered panel with `scaleIn` animation, ESC + backdrop-click to close, focus trap, body-scroll lock, optional `size` (`sm|md|lg|full`).
 - `Badge` / `Pill` — `tone` = `neutral|accent|success|warning|danger|highlight`, soft or solid.
-- `IconButton`, `Tabs`, `Tooltip`, `Skeleton` (themed shimmer), `SegmentedControl` (used by the urgency picker).
-- Existing `ui/` files (`Toast`, `Spinner`, `LoadingScreen`, `ErrorBanner`, `EmptyState`) — restyled to tokens, kept.
+- `IconButton`, `Tabs`, `Tooltip`, `Skeleton` (themed shimmer), `SegmentedControl` (used by the urgency picker), `CommandPalette` (⌘K — see §8).
+- Existing `ui/` files (`Toast`, `Spinner`, `LoadingScreen`, `ErrorBanner`, `EmptyState`) — restyled to tokens, kept; `Toast` gains an optional `action` (used for "Undo" — see §8).
 
 ### 4.2 Motion
 - Route-change transition: a wrapper around the routed content (`fadeIn` + small `translateY`) keyed on `location.pathname`.
@@ -115,13 +125,17 @@ All consume `useTheme()`. New/standardized:
 - **Topbar** — token-themed; right cluster = `[ sync indicator ] [ theme toggle ] [ + New Estimate ]`.
 - Better visible focus rings (`outline: 2px solid c.accent; outline-offset: 2px`) on interactive elements; respect `:focus-visible`.
 
-### 4.4 Dashboard rebuild — `src/components/dashboard/`
-- **Hero** — greeting + live clock, aurora gradient bg (token), subtle radial bloom; clean, not noisy.
-- **Daily Tasks widget** (section 5).
-- **Stat cards** — `Card` primitives; each shows value (animated) + label + a small trend indicator (▲/▼ vs. a simple prior-period heuristic, or just count badges where no comparison is meaningful). Themed.
-- **Charts** — `RevenueChart` (recharts area) and `FunnelChart` restyled to read tokens (axis/grid/tooltip colors from `c.*`); the daily-quote card kept, themed.
-- **Quick actions** + **Recent activity** (recent estimates) — `Card`/`Button` primitives.
+### 4.4 Dashboard rebuild — `src/components/dashboard/` (the "first page")
+**Every section on the home screen gets the full premium-interactive treatment** — no half-themed leftovers. Each card uses the `Card` primitive (token bg/border/shadow, `radius.lg`), staggered `fadeUp` on mount, a hover lift, and the heavier type scale; interactive elements have visible focus rings and press feedback.
+
+- **Hero** — greeting + live clock + (optionally) a one-line "here's your day" summary (open tasks, active deals). Aurora gradient bg (token `gradientHero`) with a soft violet→cyan radial bloom; large Playfair 700 greeting; tabular clock. Subtle parallax/bloom shift on mouse-move (reduced-motion: off). The theme toggle also surfaces in the Topbar above it (works on every page).
+- **Daily Tasks widget** (section 5) — first-class citizen, prominent placement.
+- **Stat cards** — `Card` grid; each: eyebrow label (700 uppercase), animated value (tabular figures, Playfair or heavy sans at size), and a trend chip (▲/▼ % vs. a cheap prior-period heuristic where one exists; otherwise a plain count badge — never fabricate a trend). Hover lift + accent ring; clicking a card deep-links to the relevant page.
+- **Charts** — `RevenueChart` (recharts area) and `FunnelChart` fully restyled to read tokens (axis/grid/tooltip/gradient from `c.*`, in both light & dark); animated draw-in; the daily-quote card kept and re-themed (not left on the old cream).
+- **Quick actions** — `Card`/`Button` primitives, icon chips tinted from accent/highlight (not the old pastels), hover slide + accent border.
+- **Recent activity** — currently "recent estimates"; upgrade to a small **activity feed** (recent estimates created / deals moved / invoices paid / contacts added — cheap union of recent rows across tables) rendered as a clean timeline with type icons and relative timestamps. Falls back to just recent estimates if the union proves expensive.
 - Removes the unused stub files `dashboard/QuotesChart.jsx` and `dashboard/ClientTypeChart.jsx`.
+- Responsive: grid collapses gracefully on narrow widths; nothing overflows.
 
 ### 4.5 Other pages
 Estimator, EstimateList, Pipeline (+ AddDeal/Loss modals, DealCard, WarmHoldColumn), Invoices (+ Generator/List/PDF — PDF styling unchanged, only the page chrome), Products (+ ProductCatalog, MarginCalculator), Settings (+ Gmail/Stripe sub-panels), Contacts/ContactTable/ContactDetail/ImportCSV, ARIA chat, Login, Splash:
@@ -209,20 +223,36 @@ Read each route's components and check: every handler is wired to a real functio
   - User does the live click-through against the Vercel deploy using a checklist the agent provides: login → toggle theme (both modes, both persist on reload) → add a task / set urgency / check it off / leave one overnight to confirm carryover / expand the Tasks modal / set a future due date → add a contact via the new form → spot-check every page renders & primary actions work.
 - **Accessibility:** focus-visible rings, `aria-label`s on icon buttons, `prefers-reduced-motion` honored, modal focus trap + ESC, color contrast checked for both palettes.
 
-## 8. Delivery Plan
+## 8. Recommended Add-ons (beyond the original ask)
+
+Things that would meaningfully raise the "expensive software" feeling. Marked **[in]** = proposed to fold into this push (cheap, high signal), **[later]** = worth a separate round. Final include/exclude is the user's call.
+
+- **[in] Command palette (⌘K / Ctrl-K)** — fuzzy "jump to page" + quick actions (new estimate / new contact / new task / new deal / new invoice / toggle theme). One small `CommandPalette` component + a global key listener. This single feature does the most to make the app feel pro.
+- **[in] Global "+" quick-create** in the Topbar — same actions as ⌘K, mouse-reachable from anywhere; new task is creatable without going to the dashboard.
+- **[in] Undo toasts on destructive actions** — deleting a contact / task / deal shows a toast with "Undo" for ~6s before the delete actually commits (or soft-delete + restore). Stops accidental data loss, feels polished.
+- **[in] "All clear" micro-celebration** — checking off the last open task for the day fires a small, tasteful confetti burst (reuse `canvas-confetti`, already a dep). Subtle, dismissible, reduced-motion: off.
+- **[in] Themed empty-state illustrations** — replace bare "no data" text with simple inline SVG illustrations tinted from the palette (used in tasks, contacts, estimates, pipeline, invoices).
+- **[in] Sidebar badges** — small count chips: open/overdue task count near "Home", unpaid invoice count near "Invoices", active-deal count near "Pipeline". Live via realtime.
+- **[in] Theme = light / dark / system** — the toggle cycles or offers a 3-way; "system" follows `prefers-color-scheme`. Trivial once the provider exists.
+- **[later] Real activity feed page** — a dedicated `/activity` timeline of everything that happened (created/updated/paid/moved/deleted), filterable. (The dashboard gets a *mini* version now per §4.4.)
+- **[later] Shareable client quote link** — a read-only public page for an estimate (`/q/:token`) the team can send to a client, branded, no login. High-value for a quoting business but a real feature with its own spec.
+- **[later] PWA / installable + offline shell** — useful for using the hub on a phone/tablet in the field.
+- **[later] Drag-to-reorder & pin tasks**, **per-page persisted filters/sort**, **keyboard shortcuts cheat-sheet (`?`)** — nice-to-haves.
+
+## 9. Delivery Plan
 
 One branch, `feat/aurora-redesign`, committed in reviewable chunks (rough order — `writing-plans` will produce the detailed step list):
-1. Theme tokens + `ThemeProvider` + `useTheme` + toggle in Topbar; wire `body`/`Layout`/`Sidebar` to tokens; reduced-motion guard; remove `index.css`/`App.css` boilerplate.
-2. `ui/` primitives (`Button`, `Card`, `Input`/`Select`/`Textarea`, `Modal`, `Badge`, `IconButton`, `Tabs`, `Tooltip`, `Skeleton`, `SegmentedControl`); restyle existing `ui/` files.
-3. Dashboard rebuild (hero, stat cards, charts retheme, quick actions, recent activity); remove stub chart files.
-4. Daily Tasks: `daily_tasks` SQL handed to user; `useDailyTasks` hook; `TasksWidget` + `TaskRow` + `UrgencyPicker`; wire into dashboard.
-5. Daily Tasks expanded view: `TasksModal` (filters + history + future due dates).
-6. Per-page token-swap + polish + primitive adoption; contact "+ New Contact" → create-mode form + hardened insert.
+1. Theme tokens (colors + **typography: fonts, weights, type scale**) + `ThemeProvider` + `useTheme` + Topbar theme toggle (light/dark/system); wire `body`/`Layout`/`Sidebar`/`Topbar` to tokens; load Plus Jakarta Sans; reduced-motion guard; remove `index.css`/`App.css` boilerplate.
+2. `ui/` primitives (`Button`, `Card`, `Input`/`Select`/`Textarea`, `Modal`, `Badge`, `IconButton`, `Tabs`, `Tooltip`, `Skeleton`, `SegmentedControl`, `CommandPalette`); restyle existing `ui/` files; wire ⌘K + Topbar "+" quick-create; undo-toast helper.
+3. Dashboard rebuild — **all sections** (hero w/ bloom, daily-tasks placement, stat cards w/ trend chips & deep-links, charts retheme + draw-in, quick actions, mini activity feed); remove stub chart files; sidebar badges.
+4. Daily Tasks: `daily_tasks` SQL handed to user; `useDailyTasks` hook (realtime); `TasksWidget` + `TaskRow` + `UrgencyPicker`; "all clear" celebration; wire into dashboard.
+5. Daily Tasks expanded view: `TasksModal` (urgency filters + 30-day history + future due dates).
+6. Per-page token-swap + polish + primitive adoption + entrance/hover motion + empty-state illustrations; contact "+ New Contact" → `ContactDetail` create-mode form + hardened insert.
 7. Audit fixes; final cleanup; build green; PR description with the manual-test checklist and any "needs-user-verification" items.
 
 Then the user reviews and we merge to `main` (Vercel auto-deploys).
 
-## 9. Open Items / Assumptions
+## 10. Open Items / Assumptions
 
 - **RLS:** assumed `authenticated` role gets full access on app tables (per the original handoff doc). To be verified during the audit; the `daily_tasks` policy and any contacts-RLS fix will mirror whatever the existing tables actually use.
 - **Tasks are team-shared** (no per-user scoping). If single-user-per-task is wanted later, add a `user_id` column + policy — out of scope now.
