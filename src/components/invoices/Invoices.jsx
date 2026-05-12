@@ -1,25 +1,35 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
+import { useTheme } from '../../theme/useTheme'
+import { Button } from '../ui/Button'
 import InvoiceList from './InvoiceList'
 import InvoiceGenerator from './InvoiceGenerator'
 import InvoicePDF from './InvoicePDF'
 
-const NAVY = '#1c2b4a'
-const GOLD = '#c9a84c'
-const CREAM = '#f4f1eb'
-const BG = '#0f1d35'
-
-function SummaryCard({ label, value, accent }) {
+function SummaryCard({ label, value, accentColor, c }) {
   return (
     <div style={{
-      background: NAVY, borderRadius: 10, padding: '20px 24px',
-      borderTop: `3px solid ${accent || GOLD}`, flex: 1, minWidth: 160
+      background: c.surface,
+      borderRadius: c.radius.lg,
+      padding: '20px 24px',
+      borderTop: `3px solid ${accentColor}`,
+      flex: 1,
+      minWidth: 160,
+      boxShadow: c.shadowSm,
     }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: 'rgba(244,241,235,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+      <div style={{
+        fontSize: c.text.xs,
+        fontWeight: c.weight.label,
+        color: c.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.08em',
+        marginBottom: 8,
+      }}>
         {label}
       </div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: CREAM }}>
+      <div style={{ fontSize: 26, fontWeight: c.weight.hero, color: c.textPrimary }}>
         {value}
       </div>
     </div>
@@ -29,13 +39,25 @@ function SummaryCard({ label, value, accent }) {
 const today = new Date().toISOString().split('T')[0]
 
 export default function Invoices() {
+  const { c } = useTheme()
   const addToast = useToast()
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [invoices, setInvoices] = useState([])
   const [estimates, setEstimates] = useState([])
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState('list') // 'list' | 'edit' | 'pdf'
   const [selected, setSelected] = useState(null)
   const [settings, setSettings] = useState({})
+
+  // Honor ?new=1 from command palette
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setSelected(null)
+      setView('edit')
+      setSearchParams({}, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -129,39 +151,35 @@ export default function Invoices() {
   const fmt = (n) => '$' + Math.round(n).toLocaleString()
 
   return (
-    <div style={{ background: BG, minHeight: '100vh', color: CREAM, fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="fade-up" style={{ background: c.bg, minHeight: '100vh', color: c.textPrimary, fontFamily: c.font.body }}>
       {/* Header */}
       <div style={{
-        background: NAVY, padding: '20px 32px',
+        background: c.surface,
+        padding: '20px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        borderBottom: `1px solid rgba(201,168,76,0.2)`
+        borderBottom: `1px solid ${c.border}`,
+        boxShadow: c.shadowSm,
       }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: CREAM }}>Invoices</h1>
-        <button
-          onClick={handleNew}
-          style={{
-            background: GOLD, color: NAVY, border: 'none', borderRadius: 8,
-            padding: '8px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700
-          }}
-        >
+        <h1 style={{ margin: 0, fontSize: c.text.xl, fontWeight: c.weight.hero, color: c.textPrimary }}>Invoices</h1>
+        <Button variant="primary" onClick={handleNew}>
           + New Invoice
-        </button>
+        </Button>
       </div>
 
       {/* Summary Cards */}
       <div style={{ padding: '24px 32px 0' }}>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <SummaryCard label="Total Invoiced"  value={fmt(totalInvoiced)}  accent={GOLD} />
-          <SummaryCard label="Paid"            value={fmt(totalPaid)}      accent="#10b981" />
-          <SummaryCard label="Outstanding"     value={fmt(totalOutstanding)} accent="#f59e0b" />
-          <SummaryCard label="Overdue"         value={overdueCount}        accent="#ef4444" />
+          <SummaryCard label="Total Invoiced"   value={fmt(totalInvoiced)}    accentColor={c.accent}   c={c} />
+          <SummaryCard label="Paid"             value={fmt(totalPaid)}        accentColor={c.success}  c={c} />
+          <SummaryCard label="Outstanding"      value={fmt(totalOutstanding)} accentColor={c.warning}  c={c} />
+          <SummaryCard label="Overdue"          value={overdueCount}          accentColor={c.danger}   c={c} />
         </div>
       </div>
 
       {/* Content */}
       <div style={{ padding: '24px 32px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', color: 'rgba(244,241,235,0.5)', padding: 60 }}>
+          <div style={{ textAlign: 'center', color: c.textMuted, padding: 60 }}>
             Loading invoices…
           </div>
         ) : (
