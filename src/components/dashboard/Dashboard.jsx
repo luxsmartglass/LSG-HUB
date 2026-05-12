@@ -11,12 +11,7 @@ import StatsCards from './StatsCards'
 import RevenueChart from './RevenueChart'
 import FunnelChart from './FunnelChart'
 import ActivityFeed from './ActivityFeed'
-
-// Temporary placeholder — replaced in Task 4.5 when TasksWidget is implemented
-function TasksWidget({ onCount }) {
-  useEffect(() => { onCount?.(0) }, [onCount])
-  return null
-}
+import TasksWidget from './tasks/TasksWidget'
 
 const QUOTES = [
   { content: "The secret of getting ahead is getting started.", author: "Mark Twain" },
