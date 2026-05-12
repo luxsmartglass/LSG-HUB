@@ -2,47 +2,17 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
+import { useTheme } from '../../theme/useTheme'
+import { Button } from '../ui/Button'
 import { ZONE_TYPES, filmCostPerSqm, glassCostPerSqm, DEFAULT_FX } from '../../lib/pricingDatabase'
 
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  bg: '#0f1d35',
-  cardBg: '#162236',
+function marginColor(pct, c) {
+  if (pct >= 50) return c.success
+  if (pct >= 30) return c.warning
+  return c.danger
 }
 
-function marginColor(pct) {
-  if (pct >= 50) return '#22c55e'
-  if (pct >= 30) return '#f59e0b'
-  return '#ef4444'
-}
-
-function inputStyle(focused) {
-  return {
-    width: '100%',
-    background: '#0f1d35',
-    border: `1px solid ${focused ? COLORS.gold : '#1e3352'}`,
-    borderRadius: 8,
-    color: COLORS.cream,
-    fontSize: 14,
-    padding: '9px 12px',
-    outline: 'none',
-    fontFamily: "'DM Sans', sans-serif",
-    boxSizing: 'border-box',
-    transition: 'border-color 0.15s',
-  }
-}
-
-function Label({ children }) {
-  return (
-    <label style={{ color: '#8a9bb5', fontSize: 12, fontWeight: 600, letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>
-      {children}
-    </label>
-  )
-}
-
-function ToggleSwitch({ checked, onChange, label }) {
+function ToggleSwitch({ checked, onChange, label, c }) {
   return (
     <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
       <div
@@ -51,7 +21,7 @@ function ToggleSwitch({ checked, onChange, label }) {
           width: 40,
           height: 22,
           borderRadius: 11,
-          background: checked ? COLORS.gold : '#1e3352',
+          background: checked ? c.accent : c.border,
           position: 'relative',
           transition: 'background 0.2s',
           cursor: 'pointer',
@@ -69,25 +39,25 @@ function ToggleSwitch({ checked, onChange, label }) {
           transition: 'left 0.2s',
         }} />
       </div>
-      <span style={{ color: COLORS.cream, fontSize: 13.5 }}>{label}</span>
+      <span style={{ color: c.textPrimary, fontSize: c.text.sm }}>{label}</span>
     </label>
   )
 }
 
-function OutputRow({ label, value, highlight }) {
+function OutputRow({ label, value, highlight, c }) {
   return (
     <div style={{
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: '8px 0',
-      borderBottom: '1px solid #1e3352',
+      borderBottom: `1px solid ${c.border}`,
     }}>
-      <span style={{ color: '#8a9bb5', fontSize: 13 }}>{label}</span>
+      <span style={{ color: c.textMuted, fontSize: c.text.sm }}>{label}</span>
       <span style={{
-        color: highlight ? COLORS.gold : COLORS.cream,
-        fontSize: highlight ? 16 : 13.5,
-        fontWeight: highlight ? 700 : 500,
+        color: highlight ? c.accent : c.textPrimary,
+        fontSize: highlight ? c.text.md : c.text.sm,
+        fontWeight: highlight ? c.weight.strong : c.weight.body,
       }}>
         {value}
       </span>
@@ -96,6 +66,7 @@ function OutputRow({ label, value, highlight }) {
 }
 
 export default function MarginCalculator() {
+  const { c } = useTheme()
   const addToast = useToast()
   const navigate = useNavigate()
 
@@ -107,7 +78,6 @@ export default function MarginCalculator() {
   const [useDimming, setUseDimming] = useState(false)
   const [inclElec, setInclElec] = useState(false)
   const [complexity, setComplexity] = useState(1.0)
-  const [focused, setFocused] = useState({})
 
   useEffect(() => {
     async function loadSettings() {
@@ -160,40 +130,59 @@ export default function MarginCalculator() {
 
   const fmt = (n) => `$${n.toFixed(2)}`
 
+  const inputStyle = {
+    width: '100%',
+    background: c.surfaceHover,
+    border: `1px solid ${c.border}`,
+    borderRadius: c.radius.md,
+    color: c.textPrimary,
+    fontSize: c.text.base,
+    padding: '9px 12px',
+    outline: 'none',
+    fontFamily: c.font.body,
+    boxSizing: 'border-box',
+    transition: 'border-color 0.15s',
+  }
+
+  const labelStyle = {
+    color: c.textMuted,
+    fontSize: c.text.sm,
+    fontWeight: c.weight.label,
+    letterSpacing: '0.05em',
+    display: 'block',
+    marginBottom: 6,
+  }
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
       {/* Input Panel */}
-      <div style={{ background: COLORS.cardBg, borderRadius: 14, padding: 24, border: '1px solid #1e3352' }}>
-        <h3 style={{ color: COLORS.cream, fontSize: 16, fontWeight: 700, margin: '0 0 22px' }}>
+      <div style={{ background: c.surface, borderRadius: c.radius.lg, padding: 24, border: `1px solid ${c.border}`, boxShadow: c.shadowSm }}>
+        <h3 style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: '0 0 22px', fontFamily: c.font.heading }}>
           Calculator Inputs
         </h3>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Sqm */}
           <div>
-            <Label>Area (sqm)</Label>
+            <label style={labelStyle}>Area (sqm)</label>
             <input
               type="number"
               min="0"
               step="0.5"
               value={sqm}
               onChange={e => setSqm(e.target.value)}
-              onFocus={() => setFocused(f => ({ ...f, sqm: true }))}
-              onBlur={() => setFocused(f => ({ ...f, sqm: false }))}
               placeholder="e.g. 10"
-              style={inputStyle(focused.sqm)}
+              style={inputStyle}
             />
           </div>
 
           {/* Zone Type */}
           <div>
-            <Label>Zone Type</Label>
+            <label style={labelStyle}>Zone Type</label>
             <select
               value={zone}
               onChange={e => setZone(e.target.value)}
-              onFocus={() => setFocused(f => ({ ...f, zone: true }))}
-              onBlur={() => setFocused(f => ({ ...f, zone: false }))}
-              style={{ ...inputStyle(focused.zone), cursor: 'pointer' }}
+              style={{ ...inputStyle, cursor: 'pointer' }}
             >
               {ZONE_TYPES.map(z => (
                 <option key={z.label} value={z.label}>{z.label} — {z.product}</option>
@@ -203,23 +192,21 @@ export default function MarginCalculator() {
 
           {/* Sell Price */}
           <div>
-            <Label>
+            <label style={labelStyle}>
               {isGlass ? 'Glass Sell Price ($/sqm)' : 'Film Sell Price ($/sqm)'}
-            </Label>
+            </label>
             <input
               type="number"
               min="0"
               value={isGlass ? sellGlass : sellFilm}
               onChange={e => isGlass ? setSellGlass(Number(e.target.value)) : setSellFilm(Number(e.target.value))}
-              onFocus={() => setFocused(f => ({ ...f, sell: true }))}
-              onBlur={() => setFocused(f => ({ ...f, sell: false }))}
-              style={inputStyle(focused.sell)}
+              style={inputStyle}
             />
           </div>
 
           {/* Complexity */}
           <div>
-            <Label>Complexity Multiplier — {complexity.toFixed(1)}×</Label>
+            <label style={labelStyle}>Complexity Multiplier — {complexity.toFixed(1)}×</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <input
                 type="range"
@@ -228,15 +215,15 @@ export default function MarginCalculator() {
                 step="0.1"
                 value={complexity}
                 onChange={e => setComplexity(parseFloat(e.target.value))}
-                style={{ flex: 1, accentColor: COLORS.gold, cursor: 'pointer' }}
+                style={{ flex: 1, accentColor: c.accent, cursor: 'pointer' }}
               />
-              <span style={{ color: COLORS.gold, fontSize: 13, fontWeight: 600, minWidth: 30 }}>
+              <span style={{ color: c.accent, fontSize: c.text.sm, fontWeight: c.weight.strong, minWidth: 30 }}>
                 {complexity.toFixed(1)}×
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-              <span style={{ color: '#637a96', fontSize: 11 }}>Simple (0.5×)</span>
-              <span style={{ color: '#637a96', fontSize: 11 }}>Complex (2.0×)</span>
+              <span style={{ color: c.textMuted, fontSize: c.text.xs }}>Simple (0.5×)</span>
+              <span style={{ color: c.textMuted, fontSize: c.text.xs }}>Complex (2.0×)</span>
             </div>
           </div>
 
@@ -246,19 +233,21 @@ export default function MarginCalculator() {
               checked={useDimming}
               onChange={setUseDimming}
               label="Use Dimming Transformer (+$50)"
+              c={c}
             />
             <ToggleSwitch
               checked={inclElec}
               onChange={setInclElec}
               label="Include Electrician (+$977)"
+              c={c}
             />
           </div>
         </div>
       </div>
 
       {/* Output Panel */}
-      <div style={{ background: COLORS.cardBg, borderRadius: 14, padding: 24, border: '1px solid #1e3352' }}>
-        <h3 style={{ color: COLORS.cream, fontSize: 16, fontWeight: 700, margin: '0 0 22px' }}>
+      <div style={{ background: c.surface, borderRadius: c.radius.lg, padding: 24, border: `1px solid ${c.border}`, boxShadow: c.shadowSm }}>
+        <h3 style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: '0 0 22px', fontFamily: c.font.heading }}>
           Margin Analysis
         </h3>
 
@@ -266,8 +255,8 @@ export default function MarginCalculator() {
           <div style={{
             textAlign: 'center',
             padding: '40px 20px',
-            color: '#637a96',
-            fontSize: 13.5,
+            color: c.textMuted,
+            fontSize: c.text.sm,
           }}>
             Enter an area to see margin analysis
           </div>
@@ -276,86 +265,88 @@ export default function MarginCalculator() {
             {/* Margin bar */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ color: '#8a9bb5', fontSize: 12, fontWeight: 600, letterSpacing: '0.05em' }}>OVERALL MARGIN</span>
+                <span style={{ color: c.textMuted, fontSize: c.text.xs, fontWeight: c.weight.label, letterSpacing: '0.05em' }}>OVERALL MARGIN</span>
                 <span style={{
-                  color: marginColor(marginPct),
-                  fontSize: 22,
-                  fontWeight: 800,
+                  color: marginColor(marginPct, c),
+                  fontSize: c.text.xl,
+                  fontWeight: c.weight.hero,
                 }}>
                   {marginPct.toFixed(1)}%
                 </span>
               </div>
-              <div style={{ height: 10, background: '#0f1d35', borderRadius: 5 }}>
+              <div style={{ height: 10, background: c.surfaceHover, borderRadius: 5 }}>
                 <div style={{
                   height: '100%',
                   width: `${Math.min(100, Math.max(0, marginPct))}%`,
-                  background: marginColor(marginPct),
+                  background: marginColor(marginPct, c),
                   borderRadius: 5,
                   transition: 'width 0.35s, background 0.35s',
                 }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
-                <span style={{ color: '#ef4444', fontSize: 10.5 }}>Low &lt;30%</span>
-                <span style={{ color: '#f59e0b', fontSize: 10.5 }}>Amber 30–50%</span>
-                <span style={{ color: '#22c55e', fontSize: 10.5 }}>Good &gt;50%</span>
+                <span style={{ color: c.danger, fontSize: c.text.xs }}>Low &lt;30%</span>
+                <span style={{ color: c.warning, fontSize: c.text.xs }}>Amber 30–50%</span>
+                <span style={{ color: c.success, fontSize: c.text.xs }}>Good &gt;50%</span>
               </div>
             </div>
 
             {/* Revenue breakdown */}
             <div style={{
-              background: '#0f1d35',
-              borderRadius: 10,
+              background: c.surfaceHover,
+              borderRadius: c.radius.md,
               padding: '4px 16px 4px',
               marginBottom: 16,
             }}>
-              <p style={{ color: '#8a9bb5', fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', margin: '14px 0 2px' }}>
+              <p style={{ color: c.textMuted, fontSize: c.text.xs, fontWeight: c.weight.label, letterSpacing: '0.07em', margin: '14px 0 2px' }}>
                 REVENUE
               </p>
-              <OutputRow label={isGlass ? 'Glass Revenue' : 'Film Revenue'} value={fmt(filmGlassRevenue)} />
-              <OutputRow label={`Install Revenue (${complexity.toFixed(1)}× complexity)`} value={fmt(installRevenue)} />
-              <OutputRow label={`Transformer (${useDimming ? 'Dimming' : 'Normal'})`} value={fmt(transformerSell)} />
-              {inclElec && <OutputRow label="Electrician" value={fmt(elecRevenue)} />}
-              <OutputRow label="Total Revenue" value={fmt(totalRevenue)} highlight />
+              <OutputRow label={isGlass ? 'Glass Revenue' : 'Film Revenue'} value={fmt(filmGlassRevenue)} c={c} />
+              <OutputRow label={`Install Revenue (${complexity.toFixed(1)}× complexity)`} value={fmt(installRevenue)} c={c} />
+              <OutputRow label={`Transformer (${useDimming ? 'Dimming' : 'Normal'})`} value={fmt(transformerSell)} c={c} />
+              {inclElec && <OutputRow label="Electrician" value={fmt(elecRevenue)} c={c} />}
+              <OutputRow label="Total Revenue" value={fmt(totalRevenue)} highlight c={c} />
             </div>
 
             {/* Cost breakdown */}
             <div style={{
-              background: '#0f1d35',
-              borderRadius: 10,
+              background: c.surfaceHover,
+              borderRadius: c.radius.md,
               padding: '4px 16px 4px',
               marginBottom: 16,
             }}>
-              <p style={{ color: '#8a9bb5', fontSize: 11, fontWeight: 600, letterSpacing: '0.07em', margin: '14px 0 2px' }}>
+              <p style={{ color: c.textMuted, fontSize: c.text.xs, fontWeight: c.weight.label, letterSpacing: '0.07em', margin: '14px 0 2px' }}>
                 COST (CAD @ {fx.toFixed(2)})
               </p>
-              <OutputRow label={`${isGlass ? 'Glass' : 'Film'} Cost ($${costPerSqm.toFixed(2)}/sqm)`} value={fmt(filmGlassCost)} />
-              <OutputRow label="Transformer Cost" value={fmt(transformerCost)} />
-              {inclElec && <OutputRow label="Electrician Pass-through" value={fmt(elecRevenue)} />}
-              <OutputRow label="Total Cost" value={fmt(totalCost)} />
+              <OutputRow label={`${isGlass ? 'Glass' : 'Film'} Cost ($${costPerSqm.toFixed(2)}/sqm)`} value={fmt(filmGlassCost)} c={c} />
+              <OutputRow label="Transformer Cost" value={fmt(transformerCost)} c={c} />
+              {inclElec && <OutputRow label="Electrician Pass-through" value={fmt(elecRevenue)} c={c} />}
+              <OutputRow label="Total Cost" value={fmt(totalCost)} c={c} />
             </div>
 
             {/* Net profit */}
             <div style={{
-              background: '#0f1d35',
-              borderRadius: 10,
+              background: c.surfaceHover,
+              borderRadius: c.radius.md,
               padding: '16px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: 20,
             }}>
-              <span style={{ color: COLORS.cream, fontSize: 15, fontWeight: 700 }}>Net Profit</span>
+              <span style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong }}>Net Profit</span>
               <span style={{
-                color: netProfit >= 0 ? '#22c55e' : '#ef4444',
-                fontSize: 20,
-                fontWeight: 800,
+                color: netProfit >= 0 ? c.success : c.danger,
+                fontSize: c.text.xl,
+                fontWeight: c.weight.hero,
               }}>
                 {netProfit >= 0 ? '+' : ''}{fmt(netProfit)}
               </span>
             </div>
 
             {/* Add to Quote */}
-            <button
+            <Button
+              variant="primary"
+              fullWidth
               onClick={() => navigate('/estimator', {
                 state: {
                   prefill: {
@@ -365,24 +356,9 @@ export default function MarginCalculator() {
                   }
                 }
               })}
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: 9,
-                border: 'none',
-                background: COLORS.gold,
-                color: '#0f1d35',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => e.target.style.opacity = '0.85'}
-              onMouseLeave={e => e.target.style.opacity = '1'}
             >
               Add to Quote
-            </button>
+            </Button>
           </>
         )}
       </div>

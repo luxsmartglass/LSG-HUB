@@ -1,38 +1,31 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  bg: '#0f1d35',
-  cardBg: '#162236',
-}
+import { useTheme } from '../../theme/useTheme'
 
 const DEFAULT_FX = 1.37
 
-function marginColor(pct) {
-  if (pct >= 50) return '#22c55e'
-  if (pct >= 30) return '#f59e0b'
-  return '#ef4444'
+function marginColor(pct, c) {
+  if (pct >= 50) return c.success
+  if (pct >= 30) return c.warning
+  return c.danger
 }
 
-function CategoryBadge({ label, type }) {
-  const palette = {
-    film: { bg: '#1a2f50', text: '#60a5fa' },
-    glass: { bg: '#0d2e1a', text: '#4ade80' },
-    transformer: { bg: '#2e1f06', text: '#fbbf24' },
-  }
-  const c = palette[type] || palette.film
+function CategoryBadge({ label, type, c }) {
+  const tone = type === 'film'
+    ? { bg: c.highlightSoft, text: c.highlight }
+    : type === 'glass'
+    ? { bg: c.successSoft, text: c.success }
+    : { bg: c.warningSoft, text: c.warning }
+
   return (
     <span style={{
       display: 'inline-block',
       padding: '2px 10px',
-      borderRadius: 20,
-      fontSize: 11,
-      fontWeight: 600,
-      background: c.bg,
-      color: c.text,
+      borderRadius: c.radius.pill,
+      fontSize: c.text.xs,
+      fontWeight: c.weight.label,
+      background: tone.bg,
+      color: tone.text,
       letterSpacing: '0.03em',
       whiteSpace: 'nowrap',
     }}>
@@ -41,59 +34,60 @@ function CategoryBadge({ label, type }) {
   )
 }
 
-function ProductCard({ name, sellPrice, sellUnit, costPrice, description, category, categoryType, costNote }) {
+function ProductCard({ name, sellPrice, sellUnit, costPrice, description, category, categoryType, costNote, c }) {
   const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 0
 
   return (
     <div style={{
-      background: COLORS.cardBg,
-      borderRadius: 12,
+      background: c.surface,
+      borderRadius: c.radius.lg,
       padding: 20,
-      border: '1px solid #1e3352',
+      border: `1px solid ${c.border}`,
       display: 'flex',
       flexDirection: 'column',
       gap: 12,
+      boxShadow: c.shadowSm,
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-        <p style={{ color: COLORS.cream, fontSize: 14.5, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+        <p style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: 0, lineHeight: 1.3 }}>
           {name}
         </p>
-        <CategoryBadge label={category} type={categoryType} />
+        <CategoryBadge label={category} type={categoryType} c={c} />
       </div>
 
-      <p style={{ color: '#8a9bb5', fontSize: 12.5, margin: 0, lineHeight: 1.5 }}>
+      <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: 0, lineHeight: c.leading.normal }}>
         {description}
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        <div style={{ background: '#0f1d35', borderRadius: 8, padding: '10px 12px' }}>
-          <p style={{ color: '#8a9bb5', fontSize: 10.5, margin: '0 0 3px', fontWeight: 600, letterSpacing: '0.05em' }}>SELL PRICE</p>
-          <p style={{ color: COLORS.cream, fontSize: 15, fontWeight: 700, margin: 0 }}>
+        <div style={{ background: c.surfaceHover, borderRadius: c.radius.md, padding: '10px 12px' }}>
+          <p style={{ color: c.textMuted, fontSize: 10.5, margin: '0 0 3px', fontWeight: c.weight.label, letterSpacing: '0.05em' }}>SELL PRICE</p>
+          <p style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: 0 }}>
             ${sellPrice.toFixed(2)}
-            <span style={{ fontSize: 11, color: '#8a9bb5', fontWeight: 400, marginLeft: 2 }}>{sellUnit}</span>
+            <span style={{ fontSize: c.text.xs, color: c.textMuted, fontWeight: 400, marginLeft: 2 }}>{sellUnit}</span>
           </p>
         </div>
-        <div style={{ background: '#0f1d35', borderRadius: 8, padding: '10px 12px' }}>
-          <p style={{ color: '#8a9bb5', fontSize: 10.5, margin: '0 0 3px', fontWeight: 600, letterSpacing: '0.05em' }}>COST PRICE</p>
-          <p style={{ color: '#94a3b8', fontSize: 15, fontWeight: 700, margin: 0 }}>
+        <div style={{ background: c.surfaceHover, borderRadius: c.radius.md, padding: '10px 12px' }}>
+          <p style={{ color: c.textMuted, fontSize: 10.5, margin: '0 0 3px', fontWeight: c.weight.label, letterSpacing: '0.05em' }}>COST PRICE</p>
+          <p style={{ color: c.textSecondary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: 0 }}>
             ${costPrice.toFixed(2)}
-            <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 2 }}>{sellUnit}</span>
+            <span style={{ fontSize: c.text.xs, fontWeight: 400, marginLeft: 2 }}>{sellUnit}</span>
           </p>
         </div>
       </div>
 
-      <div style={{ background: '#0f1d35', borderRadius: 8, padding: '10px 12px' }}>
+      <div style={{ background: c.surfaceHover, borderRadius: c.radius.md, padding: '10px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
-          <p style={{ color: '#8a9bb5', fontSize: 10.5, margin: 0, fontWeight: 600, letterSpacing: '0.05em' }}>GROSS MARGIN</p>
-          <p style={{ color: marginColor(margin), fontSize: 14, fontWeight: 700, margin: 0 }}>
+          <p style={{ color: c.textMuted, fontSize: 10.5, margin: 0, fontWeight: c.weight.label, letterSpacing: '0.05em' }}>GROSS MARGIN</p>
+          <p style={{ color: marginColor(margin, c), fontSize: c.text.base, fontWeight: c.weight.strong, margin: 0 }}>
             {margin.toFixed(1)}%
           </p>
         </div>
-        <div style={{ height: 5, background: '#1e3352', borderRadius: 3 }}>
+        <div style={{ height: 5, background: c.border, borderRadius: 3 }}>
           <div style={{
             height: '100%',
             width: `${Math.min(100, Math.max(0, margin))}%`,
-            background: marginColor(margin),
+            background: marginColor(margin, c),
             borderRadius: 3,
             transition: 'width 0.4s',
           }} />
@@ -101,13 +95,14 @@ function ProductCard({ name, sellPrice, sellUnit, costPrice, description, catego
       </div>
 
       {costNote && (
-        <p style={{ color: '#637a96', fontSize: 11, margin: 0, fontStyle: 'italic' }}>{costNote}</p>
+        <p style={{ color: c.textMuted, fontSize: c.text.xs, margin: 0, fontStyle: 'italic' }}>{costNote}</p>
       )}
     </div>
   )
 }
 
 export default function ProductCatalog() {
+  const { c } = useTheme()
   const [fx, setFx] = useState(DEFAULT_FX)
   const [fxLoading, setFxLoading] = useState(true)
 
@@ -215,14 +210,14 @@ export default function ProductCatalog() {
 
   const SectionHeader = ({ title }) => (
     <h2 style={{
-      color: COLORS.gold,
-      fontSize: 12.5,
-      fontWeight: 700,
+      color: c.accent,
+      fontSize: c.text.sm,
+      fontWeight: c.weight.label,
       letterSpacing: '0.09em',
       textTransform: 'uppercase',
       margin: '0 0 14px',
       paddingBottom: 8,
-      borderBottom: `1px solid #1e3352`,
+      borderBottom: `1px solid ${c.border}`,
     }}>
       {title}
     </h2>
@@ -236,24 +231,25 @@ export default function ProductCatalog() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
-          background: COLORS.navy,
-          border: `1px solid ${COLORS.gold}55`,
-          borderRadius: 20,
+          background: c.surface,
+          border: `1px solid ${c.accent}44`,
+          borderRadius: c.radius.pill,
           padding: '5px 14px',
-          fontSize: 12.5,
-          color: COLORS.gold,
-          fontWeight: 600,
+          fontSize: c.text.sm,
+          color: c.accent,
+          fontWeight: c.weight.strong,
+          boxShadow: c.shadowSm,
         }}>
           <span style={{
             width: 7,
             height: 7,
             borderRadius: '50%',
-            background: fxLoading ? '#f59e0b' : '#22c55e',
+            background: fxLoading ? c.warning : c.success,
             display: 'inline-block',
           }} />
           FX: {fx.toFixed(2)} CAD/USD
         </span>
-        <span style={{ color: '#637a96', fontSize: 12 }}>
+        <span style={{ color: c.textMuted, fontSize: c.text.sm }}>
           All costs shown in CAD at current exchange rate
         </span>
       </div>
@@ -262,7 +258,7 @@ export default function ProductCatalog() {
       <div style={{ marginBottom: 40 }}>
         <SectionHeader title="Film & Glass Products" />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-          {filmProducts.map(p => <ProductCard key={p.name} {...p} />)}
+          {filmProducts.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
       </div>
 
@@ -270,7 +266,7 @@ export default function ProductCatalog() {
       <div style={{ marginBottom: 40 }}>
         <SectionHeader title="Normal Transformers — $189/unit" />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-          {normalTransformers.map(p => <ProductCard key={p.name} {...p} />)}
+          {normalTransformers.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
       </div>
 
@@ -278,7 +274,7 @@ export default function ProductCatalog() {
       <div style={{ marginBottom: 40 }}>
         <SectionHeader title="Dimming Transformers — $239/unit" />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
-          {dimmingTransformers.map(p => <ProductCard key={p.name} {...p} />)}
+          {dimmingTransformers.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
       </div>
 
@@ -286,7 +282,7 @@ export default function ProductCatalog() {
       <div style={{ marginBottom: 24 }}>
         <SectionHeader title="Multi-Channel Controllers — $239/unit" />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
-          {multiChannel.map(p => <ProductCard key={p.name} {...p} />)}
+          {multiChannel.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
       </div>
     </div>
