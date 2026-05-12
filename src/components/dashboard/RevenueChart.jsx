@@ -5,7 +5,8 @@ import EmptyState from '../ui/EmptyState'
 
 function fmtCAD(n) { return '$' + Math.round(n || 0).toLocaleString('en-CA') }
 
-export default function RevenueChart({ estimates, pipeline }) {
+// eslint-disable-next-line no-unused-vars
+export default function RevenueChart({ estimates, pipeline: _pipeline }) {
   const { c } = useTheme()
 
   // Group estimates by month
