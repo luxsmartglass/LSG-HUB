@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useTheme } from '../../theme/useTheme'
+import { useCounts } from '../../hooks/useCounts'
 
 // Badge keys map to counts prop fields
 const NAV = [
@@ -14,9 +15,12 @@ const NAV = [
   { path:'/settings', label:'Settings', icon:<SettingsIcon /> },
 ]
 
-export default function Sidebar({ session, counts = {} }) {
+export default function Sidebar({ session, counts: countsProp = {} }) {
   const navigate = useNavigate()
   const { c } = useTheme()
+  const liveCounts = useCounts()
+  // Merge: callers can still pass counts prop (e.g. in tests), but live data takes precedence
+  const counts = { ...countsProp, ...liveCounts }
 
   async function signOut() {
     await supabase.auth.signOut()
