@@ -39,16 +39,16 @@ export default function StatsCards({ stats }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
       {cards.map((c, i) => (
         <div key={c.label} style={{
-          background: '#fff', borderRadius: 10, padding: '18px 20px',
-          border: '1px solid #e5ddd0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+          background: '#162238', borderRadius: 10, padding: '18px 20px',
+          border: '1px solid rgba(201,168,76,0.15)', boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
           animation: `fadeUp 0.35s ease ${i * 0.05}s both`,
-          transition: 'box-shadow 0.2s, transform 0.2s', cursor: 'default'
+          transition: 'box-shadow 0.2s, transform 0.2s, border-color 0.2s', cursor: 'default'
         }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; e.currentTarget.style.transform = 'none' }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.35)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.4)' }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.25)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.15)' }}
         >
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '.8px', marginBottom: 8 }}>{c.label}</div>
-          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, fontWeight: 600, color: '#1c2b4a' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#c9a84c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>{c.label}</div>
+          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 26, fontWeight: 600, color: '#f4f1eb' }}>
             <AnimatedNumber value={c.value} prefix={c.prefix} suffix={c.suffix} decimals={c.decimals} />
           </div>
         </div>

@@ -14,10 +14,10 @@ export default function RevenueChart({ estimates, pipeline }) {
   if (!data.length) data.push({ month: 'Now', revenue: 0 })
 
   return (
-    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5ddd0', padding: 20 }}>
-      <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 600, color: '#1c2b4a', marginBottom: 16 }}>Revenue by Month</div>
+    <div style={{ background: '#162238', borderRadius: 12, border: '1px solid rgba(201,168,76,0.15)', padding: 20 }}>
+      <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 15, fontWeight: 600, color: '#f4f1eb', marginBottom: 16 }}>Revenue by Month</div>
       {data.every(d => d.revenue === 0) ? (
-        <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 13 }}>
+        <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a9bb5', fontSize: 13 }}>
           No estimate data yet
         </div>
       ) : (
@@ -25,14 +25,14 @@ export default function RevenueChart({ estimates, pipeline }) {
           <AreaChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#c9a84c" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="#c9a84c" stopOpacity={0.35} />
                 <stop offset="95%" stopColor="#c9a84c" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0ebe3" />
-            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={v => '$' + Math.round(v / 1000) + 'K'} />
-            <Tooltip formatter={(v) => [fmtCAD(v), 'Revenue']} contentStyle={{ background: '#1c2b4a', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#8a9bb5' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: '#8a9bb5' }} axisLine={false} tickLine={false} tickFormatter={v => '$' + Math.round(v / 1000) + 'K'} />
+            <Tooltip formatter={(v) => [fmtCAD(v), 'Revenue']} contentStyle={{ background: '#1c2b4a', border: '1px solid rgba(201,168,76,0.25)', borderRadius: 8, color: '#f4f1eb', fontSize: 12 }} labelStyle={{ color: '#8a9bb5' }} cursor={{ stroke: 'rgba(201,168,76,0.3)' }} />
             <Area type="monotone" dataKey="revenue" stroke="#c9a84c" strokeWidth={2} fill="url(#revenueGrad)" />
           </AreaChart>
         </ResponsiveContainer>

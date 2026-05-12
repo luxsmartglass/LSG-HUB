@@ -131,25 +131,25 @@ export default function Dashboard() {
 
           {/* Quick Actions */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.8px', color: '#9ca3af', marginBottom: 12 }}>Quick Actions</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#c9a84c', marginBottom: 12 }}>Quick Actions</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { icon: '📋', title: 'New Estimate', sub: 'Create a quote for a new client', path: '/estimator', bg: '#e0f2fe' },
-                { icon: '🔥', title: 'View Pipeline', sub: `${stats?.activeDeals || 0} active deals · ${fmtCAD(stats?.pipelineVal)}`, path: '/pipeline', bg: '#fce7f3' },
-                { icon: '👥', title: 'All Clients', sub: `${stats?.totalEstimates || 0} estimates saved`, path: '/contacts', bg: '#f0fdf4' },
+                { icon: '📋', title: 'New Estimate', sub: 'Create a quote for a new client', path: '/estimator', bg: 'rgba(96,165,250,0.14)' },
+                { icon: '🔥', title: 'View Pipeline', sub: `${stats?.activeDeals || 0} active deals · ${fmtCAD(stats?.pipelineVal)}`, path: '/pipeline', bg: 'rgba(244,114,182,0.14)' },
+                { icon: '👥', title: 'All Clients', sub: `${stats?.totalEstimates || 0} estimates saved`, path: '/contacts', bg: 'rgba(74,222,128,0.14)' },
               ].map(a => (
                 <button key={a.path} onClick={() => navigate(a.path)} style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px',
-                  background: '#fff', border: '1px solid #e5ddd0', borderRadius: 10, cursor: 'pointer',
+                  background: '#162238', border: '1px solid rgba(201,168,76,0.15)', borderRadius: 10, cursor: 'pointer',
                   transition: 'all 0.18s', textAlign: 'left', fontFamily: "'DM Sans',sans-serif", width: '100%'
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#1c2b4a'; e.currentTarget.style.transform = 'translateX(3px)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5ddd0'; e.currentTarget.style.transform = 'none' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = '#c9a84c'; e.currentTarget.style.transform = 'translateX(3px)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(201,168,76,0.15)'; e.currentTarget.style.transform = 'none' }}
                 >
                   <div style={{ width: 36, height: 36, borderRadius: 8, background: a.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{a.icon}</div>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1c2b4a' }}>{a.title}</div>
-                    <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 1 }}>{a.sub}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#f4f1eb' }}>{a.title}</div>
+                    <div style={{ fontSize: 11.5, color: '#8a9bb5', marginTop: 1 }}>{a.sub}</div>
                   </div>
                 </button>
               ))}
@@ -158,20 +158,20 @@ export default function Dashboard() {
 
           {/* Recent Estimates */}
           {recentEstimates.length > 0 && (
-            <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5ddd0', padding: 20 }}>
+            <div style={{ background: '#162238', borderRadius: 10, border: '1px solid rgba(201,168,76,0.15)', padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 600, color: '#1c2b4a' }}>Recent Estimates</div>
-                <button onClick={() => navigate('/estimates')} style={{ fontSize: 12.5, color: '#9ca3af', background: 'none', border: '1px solid #e5ddd0', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>View All</button>
+                <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 600, color: '#f4f1eb' }}>Recent Estimates</div>
+                <button onClick={() => navigate('/estimates')} style={{ fontSize: 12.5, color: 'rgba(244,241,235,0.6)', background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>View All</button>
               </div>
               {recentEstimates.map(e => (
-                <div key={e.id || e.created_at} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f0ebe3' }}>
+                <div key={e.id || e.created_at} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#1c2b4a' }}>{e.client_name}</div>
-                    <div style={{ fontSize: 11.5, color: '#9ca3af', marginTop: 2 }}>{timeAgo(e.created_at)}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#f4f1eb' }}>{e.client_name}</div>
+                    <div style={{ fontSize: 11.5, color: '#8a9bb5', marginTop: 2 }}>{timeAgo(e.created_at)}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 13.5, fontWeight: 600, color: '#c9a84c' }}>{fmtCAD(e.total_revenue)}</div>
-                    <div style={{ fontSize: 11.5, color: e.margin_pct >= 40 ? '#059669' : '#d97706' }}>{(e.margin_pct || 0).toFixed(1)}% margin</div>
+                    <div style={{ fontSize: 11.5, color: e.margin_pct >= 40 ? '#34d399' : '#fbbf24' }}>{(e.margin_pct || 0).toFixed(1)}% margin</div>
                   </div>
                 </div>
               ))}
