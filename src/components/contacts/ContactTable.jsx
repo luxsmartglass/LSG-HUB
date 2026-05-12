@@ -1,9 +1,6 @@
 import { useState, useMemo } from 'react'
-
-const NAVY = '#1c2b4a'
-const GOLD = '#c9a84c'
-const CREAM = '#f4f1eb'
-const BG = '#0f1d35'
+import { useTheme } from '../../theme/useTheme'
+import EmptyState from '../ui/EmptyState'
 
 const SOURCE_COLORS = {
   Apollo:       { bg: '#1e40af', color: '#bfdbfe' },
@@ -17,19 +14,20 @@ function SourceBadge({ source }) {
     <span style={{
       background: style.bg, color: style.color,
       borderRadius: 12, padding: '2px 10px', fontSize: 12, fontWeight: 600,
-      whiteSpace: 'nowrap'
+      whiteSpace: 'nowrap',
     }}>
       {source || 'Manual'}
     </span>
   )
 }
 
-function TagBadge({ tag }) {
+function TagBadge({ tag, c }) {
   return (
     <span style={{
-      background: 'rgba(201,168,76,0.18)', color: GOLD,
-      borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 600,
-      border: `1px solid rgba(201,168,76,0.3)`
+      background: c.accentSoft, color: c.accent,
+      borderRadius: c.radius.pill, padding: '2px 8px',
+      fontSize: c.text.xs, fontWeight: c.weight.button,
+      border: `1px solid ${c.accent}22`,
     }}>
       {tag}
     </span>
@@ -37,17 +35,18 @@ function TagBadge({ tag }) {
 }
 
 const COLUMNS = [
-  { key: 'name',       label: 'Name',    sortable: true },
-  { key: 'company',    label: 'Company', sortable: true },
-  { key: 'role',       label: 'Role',    sortable: false },
-  { key: 'email',      label: 'Email',   sortable: false },
-  { key: 'phone',      label: 'Phone',   sortable: false },
-  { key: 'source',     label: 'Source',  sortable: false },
-  { key: 'tags',       label: 'Tags',    sortable: false },
-  { key: 'actions',    label: '',        sortable: false },
+  { key: 'name',    label: 'Name',    sortable: true },
+  { key: 'company', label: 'Company', sortable: true },
+  { key: 'role',    label: 'Role',    sortable: false },
+  { key: 'email',   label: 'Email',   sortable: false },
+  { key: 'phone',   label: 'Phone',   sortable: false },
+  { key: 'source',  label: 'Source',  sortable: false },
+  { key: 'tags',    label: 'Tags',    sortable: false },
+  { key: 'actions', label: '',        sortable: false },
 ]
 
 export default function ContactTable({ contacts, onSelect, onDelete, searchTerm }) {
+  const { c } = useTheme()
   const [sortKey, setSortKey] = useState('created_at')
   const [sortDir, setSortDir] = useState('desc')
   const [hoveredRow, setHoveredRow] = useState(null)
@@ -86,37 +85,34 @@ export default function ContactTable({ contacts, onSelect, onDelete, searchTerm 
   const SortIcon = ({ col }) => {
     if (!col.sortable) return null
     if (sortKey !== col.key) return <span style={{ opacity: 0.3, marginLeft: 4 }}>⇅</span>
-    return <span style={{ color: GOLD, marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>
+    return <span style={{ color: c.accent, marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>
   }
 
   if (sorted.length === 0) {
     return (
-      <div style={{
-        textAlign: 'center', padding: '80px 20px',
-        color: 'rgba(244,241,235,0.4)', fontSize: 16
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-        <div style={{ fontWeight: 600, marginBottom: 8 }}>No contacts yet</div>
-        <div style={{ fontSize: 14 }}>Import from CSV or add manually</div>
-      </div>
+      <EmptyState
+        illustration="EmptyContacts"
+        title="No contacts yet"
+        message="Add one, or import a CSV."
+      />
     )
   }
 
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: c.text.base }}>
         <thead>
-          <tr style={{ borderBottom: `2px solid rgba(201,168,76,0.3)` }}>
+          <tr style={{ borderBottom: `2px solid ${c.border}` }}>
             {COLUMNS.map(col => (
               <th
                 key={col.key}
                 onClick={() => col.sortable && handleSort(col.key)}
                 style={{
                   padding: '12px 16px', textAlign: 'left',
-                  color: 'rgba(244,241,235,0.6)', fontWeight: 600, fontSize: 12,
+                  color: c.textMuted, fontWeight: c.weight.label, fontSize: c.text.xs,
                   textTransform: 'uppercase', letterSpacing: '0.05em',
                   cursor: col.sortable ? 'pointer' : 'default',
-                  userSelect: 'none', whiteSpace: 'nowrap'
+                  userSelect: 'none', whiteSpace: 'nowrap',
                 }}
               >
                 {col.label}<SortIcon col={col} />
@@ -140,26 +136,28 @@ export default function ContactTable({ contacts, onSelect, onDelete, searchTerm 
                 onMouseLeave={() => setHoveredRow(null)}
                 onClick={() => onSelect(contact)}
                 style={{
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  borderBottom: `1px solid ${c.border}`,
                   cursor: 'pointer',
-                  background: isHovered ? 'rgba(201,168,76,0.06)' : 'transparent',
-                  borderLeft: isHovered ? `3px solid ${GOLD}` : '3px solid transparent',
-                  transition: 'all 0.15s ease'
+                  background: isHovered ? c.surfaceHover : 'transparent',
+                  borderLeft: isHovered ? `3px solid ${c.accent}` : '3px solid transparent',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 <td style={{ padding: '14px 16px' }}>
-                  <div style={{ fontWeight: 600, color: CREAM }}>{contact.name || '—'}</div>
+                  <div style={{ fontWeight: c.weight.button, color: c.textPrimary }}>
+                    {contact.name || '—'}
+                  </div>
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.8)' }}>
+                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
                   {contact.company || '—'}
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.6)' }}>
+                <td style={{ padding: '14px 16px', color: c.textMuted }}>
                   {contact.role || '—'}
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.7)' }}>
+                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
                   {contact.email || '—'}
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.7)' }}>
+                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
                   {contact.phone || '—'}
                 </td>
                 <td style={{ padding: '14px 16px' }}>
@@ -167,7 +165,7 @@ export default function ContactTable({ contacts, onSelect, onDelete, searchTerm 
                 </td>
                 <td style={{ padding: '14px 16px' }}>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {tags.map((tag, i) => <TagBadge key={i} tag={tag} />)}
+                    {tags.map((tag, i) => <TagBadge key={i} tag={tag} c={c} />)}
                   </div>
                 </td>
                 <td style={{ padding: '14px 16px' }} onClick={e => e.stopPropagation()}>
@@ -176,9 +174,9 @@ export default function ContactTable({ contacts, onSelect, onDelete, searchTerm 
                       if (window.confirm(`Delete ${contact.name}?`)) onDelete(contact.id)
                     }}
                     style={{
-                      background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)',
-                      color: '#fca5a5', borderRadius: 6, padding: '6px 10px',
-                      cursor: 'pointer', fontSize: 14
+                      background: c.dangerSoft, border: `1px solid ${c.danger}44`,
+                      color: c.danger, borderRadius: c.radius.sm, padding: '6px 10px',
+                      cursor: 'pointer', fontSize: 14,
                     }}
                     title="Delete contact"
                   >
