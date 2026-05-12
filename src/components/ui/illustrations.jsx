@@ -117,8 +117,6 @@ export function EmptyInvoices({ size }) {
       <line x1="34" y1="50" x2="70" y2="50" stroke={c.border} strokeWidth="1.5" strokeLinecap="round" />
       {/* Amount accent */}
       <line x1="34" y1="62" x2="86" y2="62" stroke={c.accent} strokeWidth="2" strokeLinecap="round" />
-      {/* Dollar sign */}
-      <circle cx="60" cy="92" r="0" />
     </Svg>
   )
 }
@@ -162,6 +160,7 @@ export function EmptyGeneric({ size }) {
 }
 
 // Map of string name → component
+// eslint-disable-next-line react-refresh/only-export-components
 export const ILLUSTRATIONS = {
   EmptyTasks,
   EmptyContacts,

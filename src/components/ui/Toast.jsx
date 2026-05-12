@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useCallback } from 'react'
+import { useState, createContext, useContext, useCallback } from 'react'
 import { useTheme } from '../../theme/useTheme'
 
 const ToastContext = createContext(null)
@@ -40,8 +40,8 @@ function ToastList({ toasts, dismiss }) {
                 onClick={() => { t.action.onClick(); dismiss(t.id) }}
                 style={{
                   background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  color: isError || isWarning ? '#fff' : c.textSecondary,
+                  border: isError || isWarning ? '1px solid rgba(255,255,255,0.3)' : '1px solid ' + c.border,
+                  color: isError || isWarning ? '#fff' : c.textPrimary,
                   borderRadius: 6,
                   padding: '3px 10px',
                   fontWeight: 600,
