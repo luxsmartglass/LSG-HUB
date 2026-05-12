@@ -1,50 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
+import { useTheme } from '../../theme/useTheme'
+import { Button } from '../ui/Button'
 import GmailSettings from './GmailSettings'
 import StripeSettings from './StripeSettings'
-
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  bg: '#0f1d35',
-  cardBg: '#162236',
-}
-
-function inputStyle(focused) {
-  return {
-    width: '100%',
-    background: '#0f1d35',
-    border: `1px solid ${focused ? COLORS.gold : '#1e3352'}`,
-    borderRadius: 8,
-    color: COLORS.cream,
-    fontSize: 14,
-    padding: '9px 12px',
-    outline: 'none',
-    fontFamily: "'DM Sans', sans-serif",
-    boxSizing: 'border-box',
-    transition: 'border-color 0.15s',
-  }
-}
-
-function FormField({ label, children }) {
-  return (
-    <div>
-      <label style={{
-        display: 'block',
-        color: '#8a9bb5',
-        fontSize: 12,
-        fontWeight: 600,
-        letterSpacing: '0.05em',
-        marginBottom: 6,
-      }}>
-        {label}
-      </label>
-      {children}
-    </div>
-  )
-}
 
 const DEFAULT_SETTINGS = {
   company_name: '',
@@ -57,10 +17,10 @@ const DEFAULT_SETTINGS = {
 }
 
 export default function Settings() {
+  const { c } = useTheme()
   const addToast = useToast()
 
   const [fields, setFields] = useState(DEFAULT_SETTINGS)
-  const [focused, setFocused] = useState({})
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -114,19 +74,48 @@ export default function Settings() {
     addToast('Local data cleared', 'success')
   }
 
-  const fo = (key) => ({
-    onFocus: () => setFocused(f => ({ ...f, [key]: true })),
-    onBlur: () => setFocused(f => ({ ...f, [key]: false })),
-  })
+  const inputStyle = {
+    width: '100%',
+    background: c.surfaceHover,
+    border: `1px solid ${c.border}`,
+    borderRadius: c.radius.md,
+    color: c.textPrimary,
+    fontSize: c.text.base,
+    padding: '9px 12px',
+    outline: 'none',
+    fontFamily: c.font.body,
+    boxSizing: 'border-box',
+    transition: 'border-color 0.15s',
+  }
+
+  const labelStyle = {
+    display: 'block',
+    color: c.textMuted,
+    fontSize: c.text.sm,
+    fontWeight: c.weight.label,
+    letterSpacing: '0.05em',
+    marginBottom: 6,
+  }
+
+  const sectionHeaderStyle = {
+    color: c.accent,
+    fontSize: c.text.sm,
+    fontWeight: c.weight.label,
+    letterSpacing: '0.09em',
+    textTransform: 'uppercase',
+    margin: '0 0 14px',
+    paddingBottom: 8,
+    borderBottom: `1px solid ${c.border}`,
+  }
 
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.bg, padding: '32px 24px', fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="fade-up" style={{ minHeight: '100vh', background: c.bg, padding: '32px 24px', fontFamily: c.font.body }}>
       {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ color: COLORS.cream, fontSize: 26, fontWeight: 700, margin: 0 }}>
+        <h1 style={{ color: c.textPrimary, fontSize: c.text['2xl'], fontWeight: c.weight.hero, margin: 0, fontFamily: c.font.heading }}>
           Settings
         </h1>
-        <p style={{ color: '#8a9bb5', fontSize: 14, margin: '5px 0 0' }}>
+        <p style={{ color: c.textMuted, fontSize: c.text.base, margin: '5px 0 0' }}>
           Manage integrations and business preferences
         </p>
       </div>
@@ -135,18 +124,7 @@ export default function Settings() {
 
         {/* Integrations Section */}
         <section>
-          <h2 style={{
-            color: COLORS.gold,
-            fontSize: 12.5,
-            fontWeight: 700,
-            letterSpacing: '0.09em',
-            textTransform: 'uppercase',
-            margin: '0 0 14px',
-            paddingBottom: 8,
-            borderBottom: '1px solid #1e3352',
-          }}>
-            Integrations
-          </h2>
+          <h2 style={sectionHeaderStyle}>Integrations</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <GmailSettings />
             <StripeSettings />
@@ -155,79 +133,70 @@ export default function Settings() {
 
         {/* Business Settings Section */}
         <section>
-          <h2 style={{
-            color: COLORS.gold,
-            fontSize: 12.5,
-            fontWeight: 700,
-            letterSpacing: '0.09em',
-            textTransform: 'uppercase',
-            margin: '0 0 14px',
-            paddingBottom: 8,
-            borderBottom: '1px solid #1e3352',
-          }}>
-            Business Settings
-          </h2>
+          <h2 style={sectionHeaderStyle}>Business Settings</h2>
 
           <div style={{
-            background: COLORS.cardBg,
-            borderRadius: 14,
+            background: c.surface,
+            borderRadius: c.radius.lg,
             padding: 24,
-            border: '1px solid #1e3352',
+            border: `1px solid ${c.border}`,
+            boxShadow: c.shadowSm,
           }}>
             {loading ? (
-              <div style={{ color: '#8a9bb5', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>
+              <div style={{ color: c.textMuted, fontSize: c.text.sm, textAlign: 'center', padding: '24px 0' }}>
                 Loading settings…
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {/* Row 1: Company name + email */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                  <FormField label="Company Name">
+                  <div>
+                    <label style={labelStyle}>Company Name</label>
                     <input
                       value={fields.company_name}
                       onChange={e => setField('company_name', e.target.value)}
                       placeholder="Lux Smart Glass"
-                      style={inputStyle(focused.company_name)}
-                      {...fo('company_name')}
+                      style={inputStyle}
                     />
-                  </FormField>
-                  <FormField label="Company Email">
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Company Email</label>
                     <input
                       type="email"
                       value={fields.company_email}
                       onChange={e => setField('company_email', e.target.value)}
                       placeholder="info@luxsmartglass.ca"
-                      style={inputStyle(focused.company_email)}
-                      {...fo('company_email')}
+                      style={inputStyle}
                     />
-                  </FormField>
+                  </div>
                 </div>
 
                 {/* Row 2: Phone + Address */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                  <FormField label="Phone">
+                  <div>
+                    <label style={labelStyle}>Phone</label>
                     <input
                       value={fields.phone}
                       onChange={e => setField('phone', e.target.value)}
                       placeholder="+1 (416) 000-0000"
-                      style={inputStyle(focused.phone)}
-                      {...fo('phone')}
+                      style={inputStyle}
                     />
-                  </FormField>
-                  <FormField label="Address">
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Address</label>
                     <input
                       value={fields.address}
                       onChange={e => setField('address', e.target.value)}
                       placeholder="123 Main St, Toronto ON"
-                      style={inputStyle(focused.address)}
-                      {...fo('address')}
+                      style={inputStyle}
                     />
-                  </FormField>
+                  </div>
                 </div>
 
                 {/* Row 3: Financial settings */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
-                  <FormField label="USD/CAD Exchange Rate">
+                  <div>
+                    <label style={labelStyle}>USD/CAD Exchange Rate</label>
                     <input
                       type="number"
                       step="0.01"
@@ -235,11 +204,11 @@ export default function Settings() {
                       value={fields.usd_cad_rate}
                       onChange={e => setField('usd_cad_rate', e.target.value)}
                       placeholder="1.37"
-                      style={inputStyle(focused.usd_cad_rate)}
-                      {...fo('usd_cad_rate')}
+                      style={inputStyle}
                     />
-                  </FormField>
-                  <FormField label="Default Tax Rate (%)">
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Default Tax Rate (%)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -248,11 +217,11 @@ export default function Settings() {
                       value={fields.default_tax_rate}
                       onChange={e => setField('default_tax_rate', e.target.value)}
                       placeholder="13"
-                      style={inputStyle(focused.default_tax_rate)}
-                      {...fo('default_tax_rate')}
+                      style={inputStyle}
                     />
-                  </FormField>
-                  <FormField label="Default Deposit (%)">
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Default Deposit (%)</label>
                     <input
                       type="number"
                       step="1"
@@ -261,33 +230,16 @@ export default function Settings() {
                       value={fields.default_deposit_pct}
                       onChange={e => setField('default_deposit_pct', e.target.value)}
                       placeholder="50"
-                      style={inputStyle(focused.default_deposit_pct)}
-                      {...fo('default_deposit_pct')}
+                      style={inputStyle}
                     />
-                  </FormField>
+                  </div>
                 </div>
 
                 {/* Save Button */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 4 }}>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    style={{
-                      padding: '10px 28px',
-                      borderRadius: 8,
-                      border: 'none',
-                      background: COLORS.gold,
-                      color: '#0f1d35',
-                      fontSize: 13.5,
-                      fontWeight: 700,
-                      cursor: saving ? 'not-allowed' : 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
-                      opacity: saving ? 0.7 : 1,
-                      transition: 'opacity 0.15s',
-                    }}
-                  >
+                  <Button variant="primary" loading={saving} onClick={handleSave}>
                     {saving ? 'Saving…' : 'Save Settings'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -297,22 +249,17 @@ export default function Settings() {
         {/* Danger Zone */}
         <section>
           <h2 style={{
-            color: '#ef4444',
-            fontSize: 12.5,
-            fontWeight: 700,
-            letterSpacing: '0.09em',
-            textTransform: 'uppercase',
-            margin: '0 0 14px',
-            paddingBottom: 8,
-            borderBottom: '1px solid #3a1515',
+            ...sectionHeaderStyle,
+            color: c.danger,
+            borderBottomColor: `${c.danger}33`,
           }}>
             Danger Zone
           </h2>
           <div style={{
-            background: '#1a0a0a',
-            borderRadius: 14,
+            background: c.surface,
+            borderRadius: c.radius.lg,
             padding: 20,
-            border: '1px solid #3a1515',
+            border: `1px solid ${c.danger}33`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -320,30 +267,16 @@ export default function Settings() {
             flexWrap: 'wrap',
           }}>
             <div>
-              <p style={{ color: COLORS.cream, fontSize: 14, fontWeight: 600, margin: 0 }}>
+              <p style={{ color: c.textPrimary, fontSize: c.text.base, fontWeight: c.weight.strong, margin: 0 }}>
                 Clear All Local Data
               </p>
-              <p style={{ color: '#8a9bb5', fontSize: 12.5, margin: '3px 0 0' }}>
+              <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: '3px 0 0' }}>
                 Removes cached tokens, OAuth credentials, and local preferences from this browser.
               </p>
             </div>
-            <button
-              onClick={handleClearLocalData}
-              style={{
-                padding: '9px 20px',
-                borderRadius: 8,
-                border: '1px solid #ef4444',
-                background: 'transparent',
-                color: '#ef4444',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <Button variant="danger" onClick={handleClearLocalData}>
               Clear Local Data
-            </button>
+            </Button>
           </div>
         </section>
       </div>

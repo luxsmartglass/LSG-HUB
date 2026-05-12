@@ -1,17 +1,15 @@
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  cardBg: '#162236',
-}
+import { useTheme } from '../../theme/useTheme'
 
 export default function StripeSettings() {
+  const { c } = useTheme()
+
   return (
     <div style={{
-      background: COLORS.cardBg,
-      borderRadius: 14,
+      background: c.surface,
+      borderRadius: c.radius.lg,
       padding: 24,
-      border: '1px solid #1e3352',
+      border: `1px solid ${c.border}`,
+      boxShadow: c.shadowSm,
       opacity: 0.75,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -19,9 +17,9 @@ export default function StripeSettings() {
         <div style={{
           width: 44,
           height: 44,
-          borderRadius: 10,
-          background: '#635bff22',
-          border: '1px solid #635bff44',
+          borderRadius: c.radius.md,
+          background: 'rgba(99,91,255,0.12)',
+          border: '1px solid rgba(99,91,255,0.25)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -34,18 +32,18 @@ export default function StripeSettings() {
           </svg>
         </div>
         <div>
-          <h3 style={{ color: COLORS.cream, fontSize: 15, fontWeight: 700, margin: 0 }}>
+          <h3 style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: 0 }}>
             Stripe Payments
           </h3>
-          <p style={{ color: '#8a9bb5', fontSize: 12.5, margin: '2px 0 0' }}>
+          <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: '2px 0 0' }}>
             Accept payments and deposits via credit card
           </p>
         </div>
       </div>
 
       <div style={{
-        background: '#0f1d35',
-        borderRadius: 10,
+        background: c.surfaceHover,
+        borderRadius: c.radius.md,
         padding: '20px',
         textAlign: 'center',
       }}>
@@ -53,16 +51,16 @@ export default function StripeSettings() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 8,
-          background: '#635bff22',
-          border: '1px solid #635bff44',
-          borderRadius: 20,
+          background: 'rgba(99,91,255,0.10)',
+          border: '1px solid rgba(99,91,255,0.25)',
+          borderRadius: c.radius.pill,
           padding: '5px 14px',
           marginBottom: 12,
         }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
-          <span style={{ color: '#635bff', fontSize: 12, fontWeight: 600 }}>Coming Soon</span>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: c.warning, display: 'inline-block' }} />
+          <span style={{ color: '#635bff', fontSize: c.text.sm, fontWeight: c.weight.strong }}>Coming Soon</span>
         </div>
-        <p style={{ color: '#8a9bb5', fontSize: 13, margin: 0, lineHeight: 1.6 }}>
+        <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: 0, lineHeight: c.leading.normal }}>
           Stripe payments integration coming soon. You'll be able to collect deposits and full payments directly from estimates and invoices.
         </p>
       </div>
