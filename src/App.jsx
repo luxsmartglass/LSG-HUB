@@ -14,6 +14,7 @@ import Settings from './components/settings/Settings'
 import Splash from './components/Splash'
 import { ToastProvider } from './components/ui/Toast'
 import { useTheme } from './theme/useTheme'
+import CommandPalette from './components/ui/CommandPalette'
 
 function ProtectedRoute({ session, children }) {
   if (!session) return <Navigate to="/login" replace />
@@ -50,6 +51,7 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <CommandPalette />
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
