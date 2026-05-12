@@ -43,6 +43,10 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb { background: rgba(26,23,38,0
 .fade-in { animation: fadeIn 0.3s ease both; }
 .scale-in { animation: scaleIn 0.22s cubic-bezier(.22,1,.36,1) both; }
 
+/* Placeholder text colors per theme */
+html[data-theme='dark']  ::placeholder { color: #8b85a0; }
+html[data-theme='light'] ::placeholder { color: #6b6680; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
