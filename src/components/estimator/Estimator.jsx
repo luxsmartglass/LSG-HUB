@@ -8,6 +8,7 @@ import ZoneBuilder from './ZoneBuilder'
 import QuoteSidebar from './QuoteSidebar'
 import TransformerSelector from './TransformerSelector'
 import EstimatePDF from './EstimatePDF'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 const STEPS = ['Project Info', 'Glass Zones', 'Options & Pricing']
 
@@ -28,11 +29,13 @@ export default function Estimator() {
   const location = useLocation()
   const toast = useToast()
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const [w, setW] = useState(DEFAULT_WIZARD)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({})
   const [savedEstimate, setSavedEstimate] = useState(null)
   const [showPdf, setShowPdf] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -168,10 +171,10 @@ export default function Estimator() {
   }
 
   return (
-    <div className="fade-up" style={{ display: 'flex', gap: 24, alignItems: 'flex-start', animation: 'fadeUp 0.35s ease both' }}>
+    <div className="fade-up" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 24, alignItems: 'flex-start', animation: 'fadeUp 0.35s ease both' }}>
       {showPdf && savedEstimate && <EstimatePDF estimate={savedEstimate} onClose={() => setShowPdf(false)} />}
       {/* MAIN */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, paddingBottom: isMobile ? 0 : undefined }}>
         {/* Step bar */}
         <div style={{ display: 'flex', marginBottom: 28 }}>
           {STEPS.map((s, i) => {
@@ -257,19 +260,26 @@ export default function Estimator() {
         )}
 
         {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8 }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: isMobile ? undefined : 'space-between',
+          alignItems: isMobile ? 'stretch' : 'center',
+          gap: isMobile ? 8 : undefined,
+          paddingTop: 8,
+        }}>
           {w.step > 1
-            ? <button onClick={prevStep} style={ghostBtn}>← Back</button>
-            : <div />
+            ? <button onClick={prevStep} style={{ ...ghostBtn, width: isMobile ? '100%' : undefined, justifyContent: 'center' }}>← Back</button>
+            : (!isMobile && <div />)
           }
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 10 }}>
             {w.step === 3 ? (
               <>
-                <button onClick={saveEstimate} disabled={saving} style={ghostBtn}>Save Draft</button>
-                <button onClick={saveEstimate} disabled={saving} style={goldBtn}>{saving ? 'Saving…' : 'Save Estimate'}</button>
+                <button onClick={saveEstimate} disabled={saving} style={{ ...ghostBtn, width: isMobile ? '100%' : undefined, justifyContent: 'center' }}>Save Draft</button>
+                <button onClick={saveEstimate} disabled={saving} style={{ ...goldBtn, width: isMobile ? '100%' : undefined, justifyContent: 'center' }}>{saving ? 'Saving…' : 'Save Estimate'}</button>
               </>
             ) : (
-              <button onClick={nextStep} style={navyBtn}>Next →</button>
+              <button onClick={nextStep} style={{ ...navyBtn, width: isMobile ? '100%' : undefined, justifyContent: 'center' }}>Next →</button>
             )}
           </div>
         </div>
@@ -290,11 +300,58 @@ export default function Estimator() {
         )}
       </div>
 
-      {/* SIDEBAR */}
-      <div style={{ width: 300, minWidth: 300, position: 'sticky', top: 0 }}>
-        <QuoteSidebar calc={calc} w={w} />
-        {w.step === 2 && <TransformerSelector zones={w.zones} useDimming={w.use_dimming} />}
-      </div>
+      {/* SIDEBAR — desktop: fixed-width sticky column; mobile: collapsible section */}
+      {isMobile ? (
+        <div style={{ width: '100%' }}>
+          {/* Collapsible header */}
+          <button
+            onClick={() => setSidebarExpanded(prev => !prev)}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              background: c.surfaceElevated,
+              border: '1px solid ' + c.border,
+              borderRadius: sidebarExpanded ? c.radius.lg + ' ' + c.radius.lg + ' 0 0' : c.radius.lg,
+              cursor: 'pointer',
+              fontFamily: c.font.body,
+              color: c.textPrimary,
+              fontSize: c.text.base,
+              fontWeight: c.weight.body,
+            }}
+          >
+            <span>
+              <span style={{ fontWeight: c.weight.strong }}>Quote Summary</span>
+              {calc && (
+                <span style={{ marginLeft: 8, color: c.accent, fontWeight: c.weight.strong }}>
+                  ${Math.round(calc.totalRev || 0).toLocaleString('en-CA')} CAD
+                </span>
+              )}
+            </span>
+            <span style={{ color: c.textMuted, fontSize: 18, lineHeight: 1 }}>
+              {sidebarExpanded ? '▲' : '▼'}
+            </span>
+          </button>
+          {sidebarExpanded && (
+            <div style={{
+              border: '1px solid ' + c.border,
+              borderTop: 'none',
+              borderRadius: '0 0 ' + c.radius.lg + ' ' + c.radius.lg,
+              overflow: 'hidden',
+            }}>
+              <QuoteSidebar calc={calc} w={w} fullWidth />
+              {w.step === 2 && <TransformerSelector zones={w.zones} useDimming={w.use_dimming} />}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div style={{ width: 300, minWidth: 300, position: 'sticky', top: 0 }}>
+          <QuoteSidebar calc={calc} w={w} />
+          {w.step === 2 && <TransformerSelector zones={w.zones} useDimming={w.use_dimming} />}
+        </div>
+      )}
     </div>
   )
 }

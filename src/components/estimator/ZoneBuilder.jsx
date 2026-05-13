@@ -47,6 +47,7 @@ export default function ZoneBuilder({ zones, onChange, useDimming }) {
 
   return (
     <div>
+      <div className="h-scroll">
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
         <thead>
           <tr>
@@ -103,6 +104,7 @@ export default function ZoneBuilder({ zones, onChange, useDimming }) {
           )}
         </tbody>
       </table>
+      </div>
       <button
         onClick={addZone}
         style={{
