@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import { Button } from '../ui/Button'
 import { ZONE_TYPES, filmCostPerSqm, glassCostPerSqm, DEFAULT_FX } from '../../lib/pricingDatabase'
 
@@ -66,6 +67,7 @@ function OutputRow({ label, value, highlight, c }) {
 
 export default function MarginCalculator() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const navigate = useNavigate()
 
   const [fx, setFx] = useState(DEFAULT_FX)
@@ -149,7 +151,7 @@ export default function MarginCalculator() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 24, alignItems: 'start' }}>
       {/* Input Panel */}
       <div style={{ background: c.surface, borderRadius: c.radius.lg, padding: 24, border: `1px solid ${c.border}`, boxShadow: c.shadowSm }}>
         <h3 style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: '0 0 22px', fontFamily: c.font.heading }}>

@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import { SegmentedControl } from '../ui/Tabs'
 import ProductCatalog from './ProductCatalog'
 import MarginCalculator from './MarginCalculator'
 
 export default function Products() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const [activeTab, setActiveTab] = useState('catalog')
 
   return (
-    <div className="fade-up" style={{ minHeight: '100vh', background: c.bg, padding: '32px 24px', fontFamily: c.font.body }}>
+    <div className="fade-up" style={{ minHeight: '100vh', background: c.bg, padding: isMobile ? '20px 16px' : '32px 24px', fontFamily: c.font.body }}>
       {/* Page Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ color: c.textPrimary, fontSize: c.text['2xl'], fontWeight: c.weight.hero, margin: 0, fontFamily: c.font.heading }}>
@@ -20,8 +22,8 @@ export default function Products() {
         </p>
       </div>
 
-      {/* Tab Bar */}
-      <div style={{ marginBottom: 28 }}>
+      {/* Tab Bar — wraps on narrow viewports */}
+      <div style={{ marginBottom: 28, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         <SegmentedControl
           options={[
             { key: 'catalog', label: 'Catalog' },
