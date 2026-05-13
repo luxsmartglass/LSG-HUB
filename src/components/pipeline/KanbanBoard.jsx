@@ -233,6 +233,7 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
           spread: 80,
           origin: { y: 0.6 },
           colors: [c.accent, c.highlight, c.textPrimary, c.success],
+          disableForReducedMotion: true,
         });
       }).catch(() => {
         // canvas-confetti not available, silently skip

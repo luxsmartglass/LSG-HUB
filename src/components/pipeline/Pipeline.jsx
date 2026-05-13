@@ -235,7 +235,6 @@ export default function Pipeline() {
   return (
     <div className="fade-up" style={{
       fontFamily: c.font.body,
-      animation: 'fadeUp 0.35s ease both',
     }}>
       {/* Page header */}
       <div style={{

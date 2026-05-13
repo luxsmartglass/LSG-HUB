@@ -96,7 +96,7 @@ export default function EstimateList() {
   }
 
   return (
-    <div className="fade-up" style={{ animation: 'fadeUp 0.35s ease both' }}>
+    <div className="fade-up">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>

@@ -171,7 +171,7 @@ export default function Estimator() {
   }
 
   return (
-    <div className="fade-up" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 24, alignItems: 'flex-start', animation: 'fadeUp 0.35s ease both' }}>
+    <div className="fade-up" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 24, alignItems: 'flex-start' }}>
       {showPdf && savedEstimate && <EstimatePDF estimate={savedEstimate} onClose={() => setShowPdf(false)} />}
       {/* MAIN */}
       <div style={{ flex: 1, minWidth: 0, paddingBottom: isMobile ? 0 : undefined }}>
@@ -209,7 +209,7 @@ export default function Estimator() {
         {w.step === 1 && (
           <div style={cardStyle}>
             <div style={{ fontFamily: c.font.heading, fontSize: c.text.md, marginBottom: 18, color: c.accent }}>Project Info</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <Field label="Client Name *" value={w.client_name} onChange={v => set('client_name', v)} placeholder="e.g. John Doe" inputStyle={inputStyle} labelStyle={labelStyle} />
               <Field label="Organization / Firm" value={w.org} onChange={v => set('org', v)} placeholder="e.g. Acme Corp" inputStyle={inputStyle} labelStyle={labelStyle} />
               <Field label="Client Email" value={w.email} onChange={v => set('email', v)} placeholder="client@email.com" type="email" inputStyle={inputStyle} labelStyle={labelStyle} />
@@ -218,7 +218,7 @@ export default function Estimator() {
             <div style={{ marginBottom: 16 }}>
               <Field label="Project Address" value={w.address} onChange={v => set('address', v)} placeholder="123 Main St, Toronto, ON" inputStyle={inputStyle} labelStyle={labelStyle} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
               <SelectField label="Project Type" value={w.type} onChange={v => set('type', v)} options={['Luxury Residential', 'Commercial', 'Healthcare', 'Hospitality']} inputStyle={inputStyle} labelStyle={labelStyle} c={c} />
               <SelectField label="Install Complexity" value={String(w.complexity)} onChange={v => set('complexity', parseFloat(v))} options={[['1.0', 'Standard ×1.0'], ['1.25', 'Moderate ×1.25'], ['1.5', 'Complex ×1.5']]} inputStyle={inputStyle} labelStyle={labelStyle} c={c} />
             </div>
@@ -250,7 +250,7 @@ export default function Estimator() {
             </div>
             <div style={cardStyle}>
               <div style={{ fontFamily: c.font.heading, fontSize: c.text.md, marginBottom: 18, color: c.accent }}>Pricing</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
                 <Field label="Film sell price / sqm (CAD)" value={String(w.film_price)} onChange={v => set('film_price', parseFloat(v) || 700)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
                 <Field label="Glass sell price / sqm (CAD)" value={String(w.glass_price)} onChange={v => set('glass_price', parseFloat(v) || 1050)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
                 <Field label="Install rate / sqm (CAD)" value={String(w.install_rate)} onChange={v => set('install_rate', parseFloat(v) || 40)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
