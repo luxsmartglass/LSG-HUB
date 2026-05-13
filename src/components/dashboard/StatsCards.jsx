@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile, useIsNarrow } from '../../hooks/useMediaQuery'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
 import AnimatedNumber from '../ui/AnimatedNumber'
@@ -7,6 +8,8 @@ import AnimatedNumber from '../ui/AnimatedNumber'
 export default function StatsCards({ stats }) {
   const navigate = useNavigate()
   const { c } = useTheme()
+  const isMobile = useIsMobile()
+  const isNarrow = useIsNarrow()
 
   if (!stats) return null
 
@@ -68,7 +71,7 @@ export default function StatsCards({ stats }) {
   ]
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
       {cards.map((card, i) => (
         <Card
           key={card.label}
