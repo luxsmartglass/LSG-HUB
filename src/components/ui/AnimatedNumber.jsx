@@ -14,23 +14,25 @@ export default function AnimatedNumber({ value, prefix = '', suffix = '', decima
       ref.current.textContent =
         prefix + (decimals ? value.toFixed(decimals) : Math.round(value).toLocaleString('en-CA')) + suffix
       prev.current = value
-      return
+      return () => {}
     }
 
     const start = prev.current
     const end = value
     const duration = 900
     const startTime = performance.now()
+    let rafId
     function step(now) {
       const pct = Math.min((now - startTime) / duration, 1)
       const ease = 1 - Math.pow(1 - pct, 3)
       const v = start + (end - start) * ease
       if (ref.current) ref.current.textContent = prefix + (decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString('en-CA')) + suffix
-      if (pct < 1) requestAnimationFrame(step)
+      if (pct < 1) rafId = requestAnimationFrame(step)
       else prev.current = end
     }
-    requestAnimationFrame(step)
-  }, [value, reduced])
+    rafId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafId)
+  }, [value, reduced, decimals, prefix, suffix])
 
   return (
     <span ref={ref} style={{ fontVariantNumeric: 'tabular-nums' }}>

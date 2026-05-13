@@ -314,7 +314,7 @@ export default function Estimator() {
               padding: '12px 16px',
               background: c.surfaceElevated,
               border: '1px solid ' + c.border,
-              borderRadius: sidebarExpanded ? c.radius.lg + ' ' + c.radius.lg + ' 0 0' : c.radius.lg,
+              borderRadius: sidebarExpanded ? `${c.radius.lg}px ${c.radius.lg}px 0 0` : c.radius.lg,
               cursor: 'pointer',
               fontFamily: c.font.body,
               color: c.textPrimary,

@@ -5,6 +5,7 @@ import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
 import { useActivityFeed } from '../../hooks/useActivityFeed'
 import { useIsMobile } from '../../hooks/useMediaQuery'
+import { useReducedMotion } from '../../lib/motion'
 import ErrorBanner from '../ui/ErrorBanner'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
@@ -56,8 +57,7 @@ export default function Dashboard() {
 
   const quote = QUOTES[new Date().getDate() % QUOTES.length]
 
-  const reducedMotion = typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     loadData()
