@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../../../theme/useTheme'
+import { listItem, useReducedMotion } from '../../../lib/motion'
 import { useDailyTasks } from '../../../hooks/useDailyTasks'
 import { partitionTodayTasks, todayStr } from '../../../lib/tasks'
 import { Card } from '../../ui/Card'
@@ -30,6 +32,7 @@ function ExpandIcon({ size = 16 }) {
 
 export function TasksWidget({ onCount }) {
   const { c } = useTheme()
+  const reduced = useReducedMotion()
   const { tasks, loading, error, addTask, toggleTask, updateTask, deleteTask } = useDailyTasks()
   const today = todayStr()
   const { open, doneToday } = partitionTodayTasks(tasks, today)
@@ -148,16 +151,32 @@ export function TasksWidget({ onCount }) {
       <div>
         {/* Open tasks */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {visibleOpen.map(task => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              today={today}
-              onToggle={toggleTask}
-              onDelete={deleteTask}
-              onRename={(id, t) => updateTask(id, { title: t })}
-            />
-          ))}
+          {reduced ? (
+            visibleOpen.map(task => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                today={today}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+                onRename={(id, t) => updateTask(id, { title: t })}
+              />
+            ))
+          ) : (
+            <AnimatePresence initial={false}>
+              {visibleOpen.map(task => (
+                <motion.div key={task.id} layout {...listItem}>
+                  <TaskRow
+                    task={task}
+                    today={today}
+                    onToggle={toggleTask}
+                    onDelete={deleteTask}
+                    onRename={(id, t) => updateTask(id, { title: t })}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
 
         {/* "More" button */}
@@ -179,16 +198,32 @@ export function TasksWidget({ onCount }) {
 
         {/* Done today */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, opacity: 0.65 }}>
-          {doneToday.map(task => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              today={today}
-              onToggle={toggleTask}
-              onDelete={deleteTask}
-              onRename={(id, t) => updateTask(id, { title: t })}
-            />
-          ))}
+          {reduced ? (
+            doneToday.map(task => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                today={today}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+                onRename={(id, t) => updateTask(id, { title: t })}
+              />
+            ))
+          ) : (
+            <AnimatePresence initial={false}>
+              {doneToday.map(task => (
+                <motion.div key={task.id} layout {...listItem}>
+                  <TaskRow
+                    task={task}
+                    today={today}
+                    onToggle={toggleTask}
+                    onDelete={deleteTask}
+                    onRename={(id, t) => updateTask(id, { title: t })}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
       </div>
     )

@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNowStrict } from 'date-fns'
+import { motion } from 'framer-motion'
 import { useTheme } from '../../theme/useTheme'
+import { spring, useReducedMotion } from '../../lib/motion'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { Skeleton } from '../ui/Skeleton'
@@ -39,6 +41,7 @@ function RelativeTime({ at }) {
 export default function ActivityFeed({ items = [], loading = false }) {
   const { c } = useTheme()
   const navigate = useNavigate()
+  const reduced = useReducedMotion()
 
   const header = (
     <div style={{
@@ -80,21 +83,97 @@ export default function ActivityFeed({ items = [], loading = false }) {
           compact
         />
       ) : (
-        <div>
-          {items.map((item, i) => {
-            const { bg, fg } = toneColors(c, item.tone)
-            const isLast = i === items.length - 1
-            return (
-              <div
-                key={item.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '10px 20px',
-                  borderBottom: isLast ? 'none' : '1px solid ' + c.border,
-                }}
-              >
+        reduced ? (
+          <div>
+            {items.map((item, i) => {
+              const { bg, fg } = toneColors(c, item.tone)
+              const isLast = i === items.length - 1
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 20px',
+                    borderBottom: isLast ? 'none' : '1px solid ' + c.border,
+                  }}
+                >
+                  {/* Icon chip */}
+                  <div style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: bg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 14,
+                    color: fg,
+                    flexShrink: 0,
+                  }}>
+                    {KIND_GLYPH[item.kind] || '•'}
+                  </div>
+
+                  {/* Text */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      color: c.textPrimary,
+                      fontWeight: c.weight.button,
+                      fontSize: c.text.base,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {item.label}
+                    </div>
+                    <div style={{
+                      color: c.textMuted,
+                      fontSize: c.text.sm,
+                      marginTop: 1,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {item.sub}
+                    </div>
+                  </div>
+
+                  {/* Relative time */}
+                  <div style={{
+                    color: c.textMuted,
+                    fontSize: c.text.xs,
+                    flexShrink: 0,
+                    textAlign: 'right',
+                  }}>
+                    <RelativeTime at={item.at} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={{ show: { transition: { staggerChildren: 0.04 } } }}
+          >
+            {items.map((item, i) => {
+              const { bg, fg } = toneColors(c, item.tone)
+              const isLast = i === items.length - 1
+              return (
+                <motion.div
+                  key={item.id}
+                  variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
+                  transition={spring}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 20px',
+                    borderBottom: isLast ? 'none' : '1px solid ' + c.border,
+                  }}
+                >
                 {/* Icon chip */}
                 <div style={{
                   width: 32,
@@ -144,10 +223,11 @@ export default function ActivityFeed({ items = [], loading = false }) {
                 }}>
                   <RelativeTime at={item.at} />
                 </div>
-              </div>
-            )
-          })}
-        </div>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+        )
       )}
     </Card>
   )
