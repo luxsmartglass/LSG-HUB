@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import InvoiceList from './InvoiceList'
 import InvoiceGenerator from './InvoiceGenerator'
 import InvoicePDF from './InvoicePDF'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 function SummaryCard({ label, value, accentColor, c }) {
   return (
@@ -41,6 +42,7 @@ const today = new Date().toISOString().split('T')[0]
 export default function Invoices() {
   const { c } = useTheme()
   const addToast = useToast()
+  const isMobile = useIsMobile()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [invoices, setInvoices] = useState([])
@@ -157,8 +159,12 @@ export default function Invoices() {
       {/* Header */}
       <div style={{
         background: c.surface,
-        padding: '20px 32px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: isMobile ? '16px 20px' : '20px 32px',
+        display: 'flex',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: isMobile ? 12 : 0,
         borderBottom: `1px solid ${c.border}`,
         boxShadow: c.shadowSm,
       }}>
@@ -169,7 +175,7 @@ export default function Invoices() {
       </div>
 
       {/* Summary Cards */}
-      <div style={{ padding: '24px 32px 0' }}>
+      <div style={{ padding: isMobile ? '16px 16px 0' : '24px 32px 0' }}>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <SummaryCard label="Total Invoiced"   value={fmt(totalInvoiced)}    accentColor={c.accent}   c={c} />
           <SummaryCard label="Paid"             value={fmt(totalPaid)}        accentColor={c.success}  c={c} />
@@ -179,7 +185,7 @@ export default function Invoices() {
       </div>
 
       {/* Content */}
-      <div style={{ padding: '24px 32px' }}>
+      <div style={{ padding: isMobile ? '16px' : '24px 32px' }}>
         {loading ? (
           <div style={{ textAlign: 'center', color: c.textMuted, padding: 60 }}>
             Loading invoices…

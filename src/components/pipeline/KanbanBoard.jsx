@@ -8,6 +8,7 @@ import { Modal } from '../ui/Modal';
 import EmptyState from '../ui/EmptyState';
 import DealCard from './DealCard';
 import WarmHoldColumn from './WarmHoldColumn';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 function formatColValue(deals) {
   const total = deals.reduce((s, d) => s + (parseFloat(d.quote_value) || 0), 0);
@@ -15,12 +16,13 @@ function formatColValue(deals) {
   return '$' + total.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-function RegularColumn({ stage, deals, onRefresh, onDelete, c }) {
+function RegularColumn({ stage, deals, onRefresh, onDelete, c, isMobile }) {
+  const colWidth = isMobile ? 280 : 240;
   return (
     <div style={{
-      width: 240,
-      minWidth: 240,
-      maxWidth: 240,
+      width: colWidth,
+      minWidth: colWidth,
+      maxWidth: isMobile ? colWidth : 240,
       display: 'flex',
       flexDirection: 'column',
       borderRadius: c.radius.lg,
@@ -175,6 +177,7 @@ function LossReasonModal({ open, onConfirm, onCancel }) {
 export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWarmContact }) {
   const addToast = useToast();
   const { c } = useTheme();
+  const isMobile = useIsMobile();
   const [lossModal, setLossModal] = useState(null); // { dealId, destStageId }
   function handleDeleteDeal(deal) {
     // deals state lives in Pipeline.jsx; we only have onRefresh here.
@@ -292,15 +295,19 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
         </div>
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 16,
-            overflowX: 'auto',
-            padding: '8px 4px 16px',
-            alignItems: 'flex-start',
-            minHeight: 300,
-          }}>
+          <div
+            className="h-scroll"
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 16,
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              padding: isMobile ? '8px 4px 20px' : '8px 4px 16px',
+              alignItems: 'flex-start',
+              minHeight: 300,
+            }}
+          >
             {PIPELINE_STAGES.map(stage => {
               const stageDeals = dealsByStage(stage.id);
               if (stage.id === 'warm_hold') {
@@ -323,6 +330,7 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
                   onRefresh={onRefresh}
                   onDelete={handleDeleteDeal}
                   c={c}
+                  isMobile={isMobile}
                 />
               );
             })}
