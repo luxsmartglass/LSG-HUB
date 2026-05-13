@@ -5,6 +5,7 @@ import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
 import { Field, Input, Textarea } from '../ui/Input'
 import { Button } from '../ui/Button'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 // Inline-editable field for edit mode
 function EditableField({ label, value, fieldKey, onSave, type = 'text', c }) {
@@ -66,6 +67,7 @@ function EditableField({ label, value, fieldKey, onSave, type = 'text', c }) {
 export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdate, onCreate }) {
   const { c } = useTheme()
   const addToast = useToast()
+  const isMobile = useIsMobile()
 
   // Derive isCreate from mode prop or absence of id
   const isCreate = mode === 'create' || !contact?.id
@@ -189,7 +191,7 @@ export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdat
       {/* Slide-in panel */}
       <div style={{
         position: 'fixed', right: 0, top: 0,
-        height: '100%', width: 420,
+        height: '100%', width: isMobile ? '100%' : 420,
         background: c.surfaceElevated, zIndex: 901,
         overflowY: 'auto',
         boxShadow: c.shadowLg,
@@ -227,7 +229,7 @@ export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdat
 
         {/* Create mode: form fields */}
         {isCreate ? (
-          <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ padding: isMobile ? '16px' : '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Field label="Full Name *" error={nameError}>
               <Input
                 type="text"
@@ -327,7 +329,7 @@ export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdat
             </div>
 
             {/* Edit mode: editable fields */}
-            <div style={{ padding: '20px 24px', flex: 1 }}>
+            <div style={{ padding: isMobile ? '16px' : '20px 24px', flex: 1 }}>
               {editSaving && (
                 <div style={{ color: c.accent, fontSize: c.text.sm, marginBottom: 8 }}>Saving…</div>
               )}
