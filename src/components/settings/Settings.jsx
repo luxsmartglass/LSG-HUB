@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import { Button } from '../ui/Button'
 import GmailSettings from './GmailSettings'
 import StripeSettings from './StripeSettings'
@@ -18,6 +19,7 @@ const DEFAULT_SETTINGS = {
 
 export default function Settings() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const addToast = useToast()
 
   const [fields, setFields] = useState(DEFAULT_SETTINGS)
@@ -109,7 +111,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="fade-up" style={{ minHeight: '100vh', background: c.bg, padding: '32px 24px', fontFamily: c.font.body }}>
+    <div className="fade-up" style={{ minHeight: '100vh', background: c.bg, padding: isMobile ? '20px 16px' : '32px 24px', fontFamily: c.font.body }}>
       {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ color: c.textPrimary, fontSize: c.text['2xl'], fontWeight: c.weight.hero, margin: 0, fontFamily: c.font.heading }}>
@@ -149,7 +151,7 @@ export default function Settings() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {/* Row 1: Company name + email */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
                   <div>
                     <label style={labelStyle}>Company Name</label>
                     <input
@@ -172,7 +174,7 @@ export default function Settings() {
                 </div>
 
                 {/* Row 2: Phone + Address */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
                   <div>
                     <label style={labelStyle}>Phone</label>
                     <input
@@ -194,7 +196,7 @@ export default function Settings() {
                 </div>
 
                 {/* Row 3: Financial settings */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 14 }}>
                   <div>
                     <label style={labelStyle}>USD/CAD Exchange Rate</label>
                     <input
@@ -237,7 +239,7 @@ export default function Settings() {
 
                 {/* Save Button */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 4 }}>
-                  <Button variant="primary" loading={saving} onClick={handleSave}>
+                  <Button variant="primary" loading={saving} onClick={handleSave} fullWidth={isMobile}>
                     {saving ? 'Saving…' : 'Save Settings'}
                   </Button>
                 </div>
