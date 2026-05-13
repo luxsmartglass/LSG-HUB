@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRealtime } from './useRealtime'
 import { useToast } from '../components/ui/Toast'
@@ -8,6 +8,11 @@ export function useDailyTasks() {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const deleteTimers = useRef([])
+
+  useEffect(() => {
+    return () => { deleteTimers.current.forEach(id => clearTimeout(id)) }
+  }, [])
 
   const reload = useCallback(async () => {
     const { data, error } = await supabase
@@ -46,11 +51,36 @@ export function useDailyTasks() {
       : { completed: true, completed_at: new Date().toISOString() })
   }, [updateTask])
 
-  const deleteTask = useCallback(async (id) => {
-    const prev = tasks
-    setTasks(p => p.filter(x => x.id !== id))   // optimistic
-    const { error } = await supabase.from('daily_tasks').delete().eq('id', id)
-    if (error) { toast(error.message, 'error'); setTasks(prev) }
+  const deleteTask = useCallback((id) => {
+    const removed = tasks.find(t => t.id === id)
+    if (!removed) {
+      // fallback: immediate delete
+      supabase.from('daily_tasks').delete().eq('id', id).then(({ error }) => {
+        if (error) toast(error.message, 'error')
+      })
+      return
+    }
+    setTasks(p => p.filter(x => x.id !== id))   // optimistic remove
+    const timer = setTimeout(async () => {
+      deleteTimers.current = deleteTimers.current.filter(t => t !== timer)
+      const { error } = await supabase.from('daily_tasks').delete().eq('id', id)
+      if (error) {
+        toast(error.message, 'error')
+        setTasks(p => [...p, removed])
+      }
+    }, 6000)
+    deleteTimers.current.push(timer)
+    toast('Task deleted', 'success', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          clearTimeout(timer)
+          deleteTimers.current = deleteTimers.current.filter(t => t !== timer)
+          setTasks(p => p.some(t => t.id === id) ? p : [...p, removed])
+        },
+      },
+      duration: 6000,
+    })
   }, [tasks, toast])
 
   return { tasks, loading, error, reload, addTask, updateTask, toggleTask, deleteTask }

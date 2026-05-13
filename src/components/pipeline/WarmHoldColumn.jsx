@@ -46,7 +46,7 @@ function FollowUpBadge({ days, c }) {
   );
 }
 
-function WarmCard({ deal, index, onRefresh }) {
+function WarmCard({ deal, index, onRefresh, onDelete }) {
   const addToast = useToast();
   const { c } = useTheme();
   const days = daysSince(deal.created_at);
@@ -77,6 +77,12 @@ function WarmCard({ deal, index, onRefresh }) {
       setEditing(false);
       if (onRefresh) onRefresh();
     }
+  }
+
+  function handleDelete(e) {
+    e.stopPropagation();
+    setEditing(false);
+    if (onDelete) onDelete(deal);
   }
 
   const inputStyle = {
@@ -205,30 +211,44 @@ function WarmCard({ deal, index, onRefresh }) {
                   rows={2}
                   style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }}
                 />
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
                   <button
                     type="button"
-                    onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
+                    onClick={handleDelete}
+                    title="Delete contact"
                     style={{
-                      padding: '5px 12px', fontSize: c.text.sm, borderRadius: c.radius.sm,
-                      border: '1px solid ' + c.border, background: 'transparent',
-                      color: c.textSecondary, cursor: 'pointer',
+                      padding: '5px 10px', fontSize: c.text.sm, borderRadius: c.radius.sm,
+                      border: '1px solid ' + c.danger + '88', background: 'transparent',
+                      color: c.danger, cursor: 'pointer',
                     }}
                   >
-                    Cancel
+                    Delete
                   </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    style={{
-                      padding: '5px 14px', fontSize: c.text.sm, fontWeight: c.weight.button,
-                      borderRadius: c.radius.sm, border: 'none', background: c.accent,
-                      color: c.accentText, cursor: saving ? 'not-allowed' : 'pointer',
-                      opacity: saving ? 0.7 : 1,
-                    }}
-                  >
-                    {saving ? 'Saving…' : 'Save'}
-                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
+                      style={{
+                        padding: '5px 12px', fontSize: c.text.sm, borderRadius: c.radius.sm,
+                        border: '1px solid ' + c.border, background: 'transparent',
+                        color: c.textSecondary, cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      style={{
+                        padding: '5px 14px', fontSize: c.text.sm, fontWeight: c.weight.button,
+                        borderRadius: c.radius.sm, border: 'none', background: c.accent,
+                        color: c.accentText, cursor: saving ? 'not-allowed' : 'pointer',
+                        opacity: saving ? 0.7 : 1,
+                      }}
+                    >
+                      {saving ? 'Saving…' : 'Save'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -239,7 +259,7 @@ function WarmCard({ deal, index, onRefresh }) {
   );
 }
 
-export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddContact }) {
+export default function WarmHoldColumn({ deals = [], stage, onRefresh, onDelete, onAddContact }) {
   const { c } = useTheme();
   const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.quote_value) || 0), 0);
   const overdueCount = deals.filter(d => daysSince(d.created_at) > 60).length;
@@ -346,7 +366,7 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
               </div>
             )}
             {deals.map((deal, i) => (
-              <WarmCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} />
+              <WarmCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} onDelete={onDelete} />
             ))}
             {provided.placeholder}
           </div>

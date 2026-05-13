@@ -9,6 +9,7 @@ const TITLES = {
   '/': 'Home',
   '/pipeline': 'Pipeline',
   '/estimator': 'New Estimate',
+  '/estimates': 'All Estimates',
   '/contacts': 'Contacts',
   '/invoices': 'Invoices',
   '/products': 'Product Catalog',

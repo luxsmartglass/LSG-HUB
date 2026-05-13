@@ -196,7 +196,7 @@ export default function Dashboard() {
 
       <ErrorBanner error={error} onRetry={loadData} />
 
-      {/* TASKS SLOT (placeholder; real widget in Task 4.5) */}
+      {/* Daily Tasks */}
       <div style={{ marginBottom: 20 }}>
         <TasksWidget onCount={setOpenTaskCount} />
       </div>

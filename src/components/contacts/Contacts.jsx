@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
@@ -24,6 +24,11 @@ export default function Contacts() {
   const [selectedContact, setSelectedContact] = useState(null)
   const [showImport, setShowImport] = useState(false)
   const [creating, setCreating] = useState(false)
+  const deleteTimers = useRef([])
+
+  useEffect(() => {
+    return () => { deleteTimers.current.forEach(id => clearTimeout(id)) }
+  }, [])
 
   // Honor ?new=1 from command palette / quick-create
   useEffect(() => {
@@ -53,15 +58,36 @@ export default function Contacts() {
 
   useEffect(() => { fetchContacts() }, [fetchContacts]) // eslint-disable-line react-hooks/set-state-in-effect -- intentional: load on mount; fetchContacts is async
 
-  const handleDelete = async (id) => {
-    const { error } = await supabase.from('contacts').delete().eq('id', id)
-    if (error) {
-      addToast('Failed to delete contact', 'error')
-    } else {
-      addToast('Contact deleted')
-      setContacts(prev => prev.filter(c => c.id !== id))
-      if (selectedContact?.id === id) setSelectedContact(null)
+  const handleDelete = (id) => {
+    const removed = contacts.find(c => c.id === id)
+    if (!removed) {
+      supabase.from('contacts').delete().eq('id', id).then(({ error }) => {
+        if (error) addToast('Failed to delete contact', 'error')
+      })
+      return
     }
+    setContacts(prev => prev.filter(c => c.id !== id))
+    if (selectedContact?.id === id) setSelectedContact(null)
+    const timer = setTimeout(async () => {
+      deleteTimers.current = deleteTimers.current.filter(t => t !== timer)
+      const { error } = await supabase.from('contacts').delete().eq('id', id)
+      if (error) {
+        addToast('Failed to delete contact', 'error')
+        setContacts(prev => [...prev, removed])
+      }
+    }, 6000)
+    deleteTimers.current.push(timer)
+    addToast('Contact deleted', 'success', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          clearTimeout(timer)
+          deleteTimers.current = deleteTimers.current.filter(t => t !== timer)
+          setContacts(prev => prev.some(c => c.id === id) ? prev : [...prev, removed])
+        },
+      },
+      duration: 6000,
+    })
   }
 
   const handleUpdate = (updated) => {

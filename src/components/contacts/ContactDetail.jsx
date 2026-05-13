@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { PIPELINE_STAGES } from '../../lib/pricingDatabase'
 import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
 import { Field, Input, Textarea } from '../ui/Input'
@@ -97,7 +98,7 @@ export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdat
       .eq('entity_type', 'contact')
       .order('created_at', { ascending: false })
       .limit(20)
-      .then(({ data }) => setActivity(data || []))
+      .then(({ data, error }) => { if (!error) setActivity(data || []) })
   }, [contact, isCreate])
 
   // Edit-mode save
@@ -108,12 +109,12 @@ export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdat
       .update({ [field]: value })
       .eq('id', contact.id)
       .select()
-      .single()
     setEditSaving(false)
     if (error) {
       addToast('Save failed: ' + error.message, 'error')
     } else {
-      onUpdate(data)
+      const updated = data?.[0]
+      if (updated) onUpdate(updated)
       addToast('Contact updated')
     }
   }
@@ -126,7 +127,7 @@ export default function ContactDetail({ contact, mode = 'edit', onClose, onUpdat
   const handleAddToPipeline = async () => {
     const { error } = await supabase.from('pipeline').insert({
       client_name: contact.name,
-      stage: 'New Lead',
+      stage: PIPELINE_STAGES[0].id,
       source: contact.source || '',
       notes: contact.company ? `Company: ${contact.company}` : '',
     })

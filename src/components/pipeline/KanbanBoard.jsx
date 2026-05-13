@@ -15,7 +15,7 @@ function formatColValue(deals) {
   return '$' + total.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-function RegularColumn({ stage, deals, onRefresh, c }) {
+function RegularColumn({ stage, deals, onRefresh, onDelete, c }) {
   return (
     <div style={{
       width: 240,
@@ -93,7 +93,7 @@ function RegularColumn({ stage, deals, onRefresh, c }) {
               </div>
             )}
             {deals.map((deal, i) => (
-              <DealCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} />
+              <DealCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} onDelete={onDelete} />
             ))}
             {provided.placeholder}
           </div>
@@ -176,6 +176,28 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
   const addToast = useToast();
   const { c } = useTheme();
   const [lossModal, setLossModal] = useState(null); // { dealId, destStageId }
+  function handleDeleteDeal(deal) {
+    // deals state lives in Pipeline.jsx; we only have onRefresh here.
+    // Use the re-insert Undo variant: delete immediately, toast with Undo that re-inserts the saved record.
+    supabase.from('pipeline').delete().eq('id', deal.id).then(({ error }) => {
+      if (error) {
+        addToast('Failed to delete deal: ' + error.message, 'error');
+      } else {
+        if (onRefresh) onRefresh();
+      }
+    });
+    addToast('Deal deleted', 'success', {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          const { error } = await supabase.from('pipeline').insert(deal).select();
+          if (error) addToast('Could not restore deal: ' + error.message, 'error');
+          else if (onRefresh) onRefresh();
+        },
+      },
+      duration: 6000,
+    });
+  }
 
   // Group deals by stage
   function dealsByStage(stageId) {
@@ -288,6 +310,7 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
                     stage={stage}
                     deals={stageDeals}
                     onRefresh={onRefresh}
+                    onDelete={handleDeleteDeal}
                     onAddContact={() => onAddWarmContact && onAddWarmContact()}
                   />
                 );
@@ -298,6 +321,7 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
                   stage={stage}
                   deals={stageDeals}
                   onRefresh={onRefresh}
+                  onDelete={handleDeleteDeal}
                   c={c}
                 />
               );

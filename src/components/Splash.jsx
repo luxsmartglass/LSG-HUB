@@ -176,7 +176,7 @@ export default function Splash({ onComplete }) {
             style={{
               fontFamily: c.font.body,
               fontSize: 'clamp(9px, 1.2vw, 11px)',
-              fontWeight: 300,
+              fontWeight: 500,
               color: `${c.accent}8c`,
               letterSpacing: '0.28em',
               textTransform: 'uppercase',
@@ -238,7 +238,7 @@ export default function Splash({ onComplete }) {
             style={{
               fontFamily: c.font.body,
               fontSize: 'clamp(9px, 1.4vw, 12px)',
-              fontWeight: 300,
+              fontWeight: 500,
               color: c.textMuted,
               letterSpacing: '0.3em',
               textTransform: 'uppercase',
