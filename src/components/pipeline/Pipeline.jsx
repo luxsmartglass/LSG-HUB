@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { PIPELINE_STAGES } from '../../lib/pricingDatabase';
 import { useToast } from '../ui/Toast';
+import { useTheme } from '../../theme/useTheme';
+import { Modal } from '../ui/Modal';
 import LoadingScreen from '../ui/LoadingScreen';
 import ErrorBanner from '../ui/ErrorBanner';
 import KanbanBoard from './KanbanBoard';
@@ -15,8 +18,9 @@ function formatCAD(value) {
 
 const DEFAULT_STAGE = PIPELINE_STAGES[0].id;
 
-function AddDealModal({ onClose, onSaved, defaultStage }) {
+function AddDealModal({ open, onClose, onSaved, defaultStage }) {
   const addToast = useToast();
+  const { c } = useTheme();
   const [form, setForm] = useState({
     client_name: '',
     quote_value: '',
@@ -24,6 +28,14 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
     notes: '',
   });
   const [saving, setSaving] = useState(false);
+
+  // Sync defaultStage when modal opens
+  useEffect(() => {
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: sync form stage when modal prop changes
+      setForm(f => ({ ...f, stage: defaultStage || DEFAULT_STAGE }));
+    }
+  }, [open, defaultStage]);
 
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }));
@@ -47,6 +59,7 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
       addToast('Failed to add deal: ' + error.message, 'error');
     } else {
       addToast('Deal added');
+      setForm({ client_name: '', quote_value: '', stage: defaultStage || DEFAULT_STAGE, notes: '' });
       onSaved();
       onClose();
     }
@@ -56,146 +69,130 @@ function AddDealModal({ onClose, onSaved, defaultStage }) {
     width: '100%',
     boxSizing: 'border-box',
     padding: '9px 12px',
-    fontSize: 13.5,
-    border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: 7,
+    fontSize: c.text.base,
+    border: '1px solid ' + c.border,
+    borderRadius: c.radius.md,
     outline: 'none',
-    color: '#f4f1eb',
-    fontFamily: "'DM Sans', sans-serif",
+    color: c.textPrimary,
+    fontFamily: c.font.body,
     marginBottom: 12,
-    background: 'rgba(255,255,255,0.07)',
+    background: c.surfaceHover,
   };
 
   const labelStyle = {
     display: 'block',
-    fontSize: 11,
-    fontWeight: 700,
-    color: '#c9a84c',
+    fontSize: c.text.xs,
+    fontWeight: c.weight.label,
+    color: c.accent,
     marginBottom: 5,
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: c.font.body,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   };
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: 'rgba(0,0,0,0.55)',
-      zIndex: 1000,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '0 16px',
-    }}>
-      <div style={{
-        background: '#162238',
-        borderRadius: 14,
-        padding: '28px 28px 24px',
-        width: 420,
-        maxWidth: '100%',
-        boxShadow: '0 20px 64px rgba(0,0,0,0.5)',
-        fontFamily: "'DM Sans', sans-serif",
-        border: '1px solid rgba(201,168,76,0.2)',
-      }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 18, color: '#f4f1eb' }}>New Deal</div>
-            <div style={{ fontSize: 12, color: 'rgba(244,241,235,0.45)', marginTop: 1 }}>Add to pipeline</div>
-          </div>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="New Deal"
+      size="sm"
+      footer={
+        <>
           <button
+            type="button"
             onClick={onClose}
             style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 22, color: 'rgba(244,241,235,0.5)', padding: '2px 8px',
-              borderRadius: 6, lineHeight: 1,
+              padding: '9px 18px', fontSize: c.text.base, borderRadius: c.radius.md,
+              border: '1px solid ' + c.border, background: 'transparent',
+              color: c.textSecondary, cursor: 'pointer', fontFamily: c.font.body,
             }}
-            aria-label="Close"
           >
-            ×
+            Cancel
           </button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <label style={labelStyle}>Client Name *</label>
-          <input
-            autoFocus
-            value={form.client_name}
-            onChange={set('client_name')}
-            placeholder="e.g. Acme Corp"
-            style={inputStyle}
-          />
-
-          <label style={labelStyle}>Deal Value (CAD)</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={form.quote_value}
-            onChange={set('quote_value')}
-            placeholder="0"
-            style={inputStyle}
-          />
-
-          <label style={labelStyle}>Stage</label>
-          <select
-            value={form.stage}
-            onChange={set('stage')}
-            style={{ ...inputStyle, appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' }}
+          <button
+            type="submit"
+            form="add-deal-form"
+            disabled={saving}
+            style={{
+              padding: '9px 22px', fontSize: c.text.base, fontWeight: c.weight.button,
+              borderRadius: c.radius.md, border: 'none',
+              background: saving ? c.accentHover : c.accent,
+              color: c.accentText, cursor: saving ? 'not-allowed' : 'pointer',
+              fontFamily: c.font.body, transition: 'background 0.15s',
+            }}
           >
-            {PIPELINE_STAGES.map(s => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
+            {saving ? 'Adding…' : 'Add Deal'}
+          </button>
+        </>
+      }
+    >
+      <form id="add-deal-form" onSubmit={handleSubmit}>
+        <label style={labelStyle}>Client Name *</label>
+        <input
+          autoFocus
+          value={form.client_name}
+          onChange={set('client_name')}
+          placeholder="e.g. Acme Corp"
+          style={inputStyle}
+        />
 
-          <label style={labelStyle}>Notes</label>
-          <textarea
-            value={form.notes}
-            onChange={set('notes')}
-            rows={3}
-            placeholder="Optional notes..."
-            style={{ ...inputStyle, resize: 'vertical', marginBottom: 20 }}
-          />
+        <label style={labelStyle}>Deal Value (CAD)</label>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={form.quote_value}
+          onChange={set('quote_value')}
+          placeholder="0"
+          style={inputStyle}
+        />
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: '9px 18px', fontSize: 13.5, borderRadius: 7,
-                border: '1px solid rgba(255,255,255,0.2)', background: 'transparent',
-                color: 'rgba(244,241,235,0.7)', cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              style={{
-                padding: '9px 22px', fontSize: 13.5, fontWeight: 700, borderRadius: 7,
-                border: 'none',
-                background: saving ? '#b8943e' : '#c9a84c',
-                color: '#1c2b4a', cursor: saving ? 'not-allowed' : 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                transition: 'background 0.15s',
-              }}
-            >
-              {saving ? 'Adding…' : 'Add Deal'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <label style={labelStyle}>Stage</label>
+        <select
+          value={form.stage}
+          onChange={set('stage')}
+          style={{ ...inputStyle, appearance: 'none', WebkitAppearance: 'none', cursor: 'pointer' }}
+        >
+          {PIPELINE_STAGES.map(s => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
+        </select>
+
+        <label style={labelStyle}>Notes</label>
+        <textarea
+          value={form.notes}
+          onChange={set('notes')}
+          rows={3}
+          placeholder="Optional notes..."
+          style={{ ...inputStyle, resize: 'vertical', marginBottom: 0 }}
+        />
+      </form>
+    </Modal>
   );
 }
 
 export default function Pipeline() {
   const addToast = useToast();
+  const { c } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addModalDefaultStage, setAddModalDefaultStage] = useState(DEFAULT_STAGE);
+
+  // Honor ?new=1 from command palette
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: URL param triggers modal, then param is cleared
+      setAddModalDefaultStage(DEFAULT_STAGE);
+      setShowAddModal(true);
+      // Strip the param
+      const next = new URLSearchParams(searchParams);
+      next.delete('new');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const fetchDeals = useCallback(async () => {
     setLoading(true);
@@ -214,6 +211,7 @@ export default function Pipeline() {
   }, [addToast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: load on mount; fetchDeals is an async callback
     fetchDeals();
   }, [fetchDeals]);
 
@@ -233,11 +231,9 @@ export default function Pipeline() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#0f1d35',
-      fontFamily: "'DM Sans', sans-serif",
-      padding: '24px 20px 40px',
+    <div className="fade-up" style={{
+      fontFamily: c.font.body,
+      animation: 'fadeUp 0.35s ease both',
     }}>
       {/* Page header */}
       <div style={{
@@ -250,15 +246,12 @@ export default function Pipeline() {
       }}>
         <div>
           <h1 style={{
-            margin: 0, fontSize: 26, fontWeight: 800, color: '#f4f1eb',
-            fontFamily: "'DM Sans', sans-serif", letterSpacing: '-0.02em',
+            margin: 0, fontSize: c.text['2xl'], fontWeight: c.weight.hero,
+            color: c.textPrimary, fontFamily: c.font.heading, letterSpacing: '-0.02em',
           }}>
             Pipeline
           </h1>
-          <p style={{
-            margin: '4px 0 0', fontSize: 13.5, color: 'rgba(244,241,235,0.45)',
-            fontFamily: "'DM Sans', sans-serif",
-          }}>
+          <p style={{ margin: '4px 0 0', fontSize: c.text.base, color: c.textMuted }}>
             Manage deals across all stages
           </p>
         </div>
@@ -267,18 +260,15 @@ export default function Pipeline() {
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '10px 20px',
-            fontSize: 13.5, fontWeight: 700,
-            borderRadius: 8,
-            border: 'none',
-            background: '#c9a84c',
-            color: '#fff',
-            cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
-            boxShadow: '0 2px 8px rgba(201,168,76,0.3)',
+            fontSize: c.text.base, fontWeight: c.weight.button,
+            borderRadius: c.radius.md, border: 'none',
+            background: c.accent, color: c.accentText,
+            cursor: 'pointer', fontFamily: c.font.body,
+            boxShadow: '0 2px 8px ' + c.accentSoft,
             transition: 'background 0.15s, transform 0.1s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#b8943e'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#c9a84c'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = c.accentHover; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = c.accent; e.currentTarget.style.transform = 'translateY(0)'; }}
         >
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -288,36 +278,16 @@ export default function Pipeline() {
       </div>
 
       {/* Summary bar */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 12,
-        marginBottom: 24,
-      }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
         {[
-          {
-            label: 'Total Deals',
-            value: deals.length,
-            icon: '📋',
-            color: '#60a5fa',
-          },
-          {
-            label: 'Pipeline Value',
-            value: formatCAD(totalValue),
-            icon: '💰',
-            color: '#c9a84c',
-          },
-          {
-            label: 'Won',
-            value: `${wonDeals.length} deals · ${formatCAD(wonValue)}`,
-            icon: '🏆',
-            color: '#34d399',
-          },
+          { label: 'Total Deals', value: deals.length, icon: '📋', color: c.highlight },
+          { label: 'Pipeline Value', value: formatCAD(totalValue), icon: '💰', color: c.accent },
+          { label: 'Won', value: `${wonDeals.length} deals · ${formatCAD(wonValue)}`, icon: '🏆', color: c.success },
         ].map(stat => (
           <div key={stat.label} style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 10,
+            background: c.surface,
+            border: '1px solid ' + c.border,
+            borderRadius: c.radius.lg,
             padding: '12px 18px',
             display: 'flex',
             alignItems: 'center',
@@ -327,16 +297,12 @@ export default function Pipeline() {
             <span style={{ fontSize: 22, lineHeight: 1 }}>{stat.icon}</span>
             <div>
               <div style={{
-                fontSize: 11, color: 'rgba(244,241,235,0.45)',
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
+                fontSize: c.text.xs, color: c.textMuted,
+                fontWeight: c.weight.label, letterSpacing: '0.04em', textTransform: 'uppercase',
               }}>
                 {stat.label}
               </div>
-              <div style={{
-                fontSize: 15, fontWeight: 700, color: stat.color,
-                fontFamily: "'DM Sans', sans-serif", marginTop: 1,
-              }}>
+              <div style={{ fontSize: c.text.md, fontWeight: c.weight.strong, color: stat.color, marginTop: 1 }}>
                 {stat.value}
               </div>
             </div>
@@ -365,13 +331,12 @@ export default function Pipeline() {
       )}
 
       {/* Add deal modal */}
-      {showAddModal && (
-        <AddDealModal
-          defaultStage={addModalDefaultStage}
-          onClose={() => setShowAddModal(false)}
-          onSaved={fetchDeals}
-        />
-      )}
+      <AddDealModal
+        open={showAddModal}
+        defaultStage={addModalDefaultStage}
+        onClose={() => setShowAddModal(false)}
+        onSaved={fetchDeals}
+      />
     </div>
   );
 }

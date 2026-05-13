@@ -3,10 +3,8 @@ import { Draggable } from 'react-beautiful-dnd';
 import { supabase } from '../../lib/supabase';
 import { PIPELINE_STAGES } from '../../lib/pricingDatabase';
 import { useToast } from '../ui/Toast';
+import { useTheme } from '../../theme/useTheme';
 
-const GOLD = '#c9a84c';
-const CREAM = '#f4f1eb';
-const NAVY = '#1c2b4a';
 
 function formatValue(val) {
   const n = parseFloat(val) || 0;
@@ -31,33 +29,9 @@ function getStageMeta(stageId) {
   return PIPELINE_STAGES.find(s => s.id === stageId) || PIPELINE_STAGES[0];
 }
 
-const inputStyle = {
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: '7px 9px',
-  fontSize: 12.5,
-  border: '1px solid rgba(255,255,255,0.15)',
-  borderRadius: 6,
-  marginBottom: 8,
-  outline: 'none',
-  color: CREAM,
-  background: 'rgba(255,255,255,0.07)',
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-const labelStyle = {
-  display: 'block',
-  fontSize: 10,
-  fontWeight: 700,
-  color: GOLD,
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-  marginBottom: 3,
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-export default function DealCard({ deal, index, onRefresh }) {
+export default function DealCard({ deal, index, onRefresh, onDelete }) {
   const addToast = useToast();
+  const { c } = useTheme();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     client_name: deal.client_name || '',
@@ -80,6 +54,20 @@ export default function DealCard({ deal, index, onRefresh }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [editing, deal]);
 
+  function handleDelete(e) {
+    e.stopPropagation();
+    setEditing(false);
+    if (onDelete) {
+      onDelete(deal);
+      return;
+    }
+    // Fallback: immediate delete if no onDelete prop
+    supabase.from('pipeline').delete().eq('id', deal.id).then(({ error }) => {
+      if (error) addToast('Failed to delete deal: ' + error.message, 'error');
+      else if (onRefresh) onRefresh();
+    });
+  }
+
   async function handleSave(e) {
     e.preventDefault();
     setSaving(true);
@@ -101,21 +89,46 @@ export default function DealCard({ deal, index, onRefresh }) {
     }
   }
 
+  const inputStyle = {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '7px 9px',
+    fontSize: c.text.sm,
+    border: '1px solid ' + c.border,
+    borderRadius: c.radius.sm,
+    marginBottom: 8,
+    outline: 'none',
+    color: c.textPrimary,
+    background: c.surfaceHover,
+    fontFamily: c.font.body,
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: c.text.xs,
+    fontWeight: c.weight.label,
+    color: c.accent,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    marginBottom: 3,
+    fontFamily: c.font.body,
+  };
+
   const cardStyle = {
-    background: '#162238',
-    borderRadius: 8,
+    background: c.surface,
+    borderRadius: c.radius.md,
     padding: '12px 14px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+    boxShadow: c.shadowSm,
     marginBottom: 8,
     position: 'relative',
     userSelect: 'none',
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: '1px solid ' + c.border,
     transition: 'box-shadow 0.15s, border-color 0.15s',
   };
 
   const draggingStyle = {
-    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-    border: `1.5px solid ${GOLD}`,
+    boxShadow: c.shadowLg,
+    border: '1.5px solid ' + c.accent,
   };
 
   return (
@@ -130,18 +143,20 @@ export default function DealCard({ deal, index, onRefresh }) {
             ...(snapshot.isDragging ? draggingStyle : {}),
             ...provided.draggableProps.style,
           }}
+          onMouseEnter={e => { if (!snapshot.isDragging) e.currentTarget.style.boxShadow = c.shadowMd; }}
+          onMouseLeave={e => { if (!snapshot.isDragging) e.currentTarget.style.boxShadow = c.shadowSm; }}
         >
           {/* Header row */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontWeight: 700, fontSize: 13.5, color: CREAM,
+                fontWeight: c.weight.strong, fontSize: c.text.base, color: c.textPrimary,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: c.font.body,
               }}>
                 {deal.client_name || 'Unnamed Client'}
               </div>
-              <div style={{ fontSize: 12.5, color: GOLD, marginTop: 2, fontFamily: "'DM Sans', sans-serif", opacity: 0.85 }}>
+              <div style={{ fontSize: c.text.sm, color: c.accent, marginTop: 2, opacity: 0.85 }}>
                 {formatValue(deal.quote_value)}
               </div>
             </div>
@@ -150,8 +165,8 @@ export default function DealCard({ deal, index, onRefresh }) {
               title="Edit deal"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: '2px 4px', borderRadius: 4,
-                color: 'rgba(244,241,235,0.35)', flexShrink: 0, lineHeight: 1,
+                padding: '2px 4px', borderRadius: c.radius.sm,
+                color: c.textMuted, flexShrink: 0, lineHeight: 1,
               }}
             >
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -161,17 +176,17 @@ export default function DealCard({ deal, index, onRefresh }) {
             </button>
           </div>
 
-          {/* Stage badge + time */}
+          {/* Stage badge + time — stage.color/bg/border stay semantic */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 9, flexWrap: 'wrap', gap: 4 }}>
             <span style={{
-              display: 'inline-block', padding: '2px 8px', borderRadius: 999,
-              fontSize: 10.5, fontWeight: 700,
+              display: 'inline-block', padding: '2px 8px', borderRadius: c.radius.pill,
+              fontSize: c.text.xs, fontWeight: c.weight.button,
               background: stage.bg, color: stage.color, border: `1px solid ${stage.border}`,
-              fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap',
             }}>
               {stage.label}
             </span>
-            <span style={{ fontSize: 10.5, color: 'rgba(244,241,235,0.35)', fontFamily: "'DM Sans', sans-serif" }}>
+            <span style={{ fontSize: c.text.xs, color: c.textMuted }}>
               {relativeTime(deal.created_at)}
             </span>
           </div>
@@ -179,11 +194,10 @@ export default function DealCard({ deal, index, onRefresh }) {
           {/* Notes preview */}
           {deal.notes && (
             <div style={{
-              marginTop: 8, fontSize: 11.5,
-              color: 'rgba(244,241,235,0.5)',
-              background: 'rgba(255,255,255,0.04)',
-              borderRadius: 4, padding: '4px 8px',
-              fontFamily: "'DM Sans', sans-serif",
+              marginTop: 8, fontSize: c.text.sm,
+              color: c.textMuted,
+              background: c.surfaceHover,
+              borderRadius: c.radius.sm, padding: '4px 8px',
               maxHeight: 40, overflow: 'hidden', textOverflow: 'ellipsis',
               display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
             }}>
@@ -198,16 +212,15 @@ export default function DealCard({ deal, index, onRefresh }) {
               onClick={e => e.stopPropagation()}
               style={{
                 position: 'absolute', top: 0, left: 0, right: 0,
-                background: '#0f1d35',
-                borderRadius: 8,
-                boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
-                border: `2px solid ${GOLD}`,
+                background: c.surfaceElevated,
+                borderRadius: c.radius.md,
+                boxShadow: c.shadowLg,
+                border: '2px solid ' + c.accent,
                 padding: '14px 16px',
                 zIndex: 100,
-                fontFamily: "'DM Sans', sans-serif",
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: 13, color: CREAM, marginBottom: 10 }}>Edit Deal</div>
+              <div style={{ fontWeight: c.weight.strong, fontSize: 13, color: c.textPrimary, marginBottom: 10 }}>Edit Deal</div>
               <form onSubmit={handleSave}>
                 <label style={labelStyle}>Client Name</label>
                 <input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} style={inputStyle} />
@@ -220,17 +233,25 @@ export default function DealCard({ deal, index, onRefresh }) {
                   rows={3}
                   style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }}
                 />
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
                   <button
                     type="button"
-                    onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
-                    style={{ padding: '5px 12px', fontSize: 12, borderRadius: 5, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(244,241,235,0.6)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
-                  >Cancel</button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    style={{ padding: '5px 14px', fontSize: 12, fontWeight: 700, borderRadius: 5, border: 'none', background: GOLD, color: NAVY, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, fontFamily: "'DM Sans', sans-serif" }}
-                  >{saving ? 'Saving…' : 'Save'}</button>
+                    onClick={handleDelete}
+                    title="Delete deal"
+                    style={{ padding: '5px 10px', fontSize: c.text.sm, borderRadius: c.radius.sm, border: '1px solid ' + c.danger + '88', background: 'transparent', color: c.danger, cursor: 'pointer' }}
+                  >Delete</button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
+                      style={{ padding: '5px 12px', fontSize: c.text.sm, borderRadius: c.radius.sm, border: '1px solid ' + c.border, background: 'transparent', color: c.textSecondary, cursor: 'pointer' }}
+                    >Cancel</button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      style={{ padding: '5px 14px', fontSize: c.text.sm, fontWeight: c.weight.button, borderRadius: c.radius.sm, border: 'none', background: c.accent, color: c.accentText, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}
+                    >{saving ? 'Saving…' : 'Save'}</button>
+                  </div>
                 </div>
               </form>
             </div>

@@ -13,10 +13,22 @@ import Products from './components/products/Products'
 import Settings from './components/settings/Settings'
 import Splash from './components/Splash'
 import { ToastProvider } from './components/ui/Toast'
+import { useTheme } from './theme/useTheme'
+import CommandPalette from './components/ui/CommandPalette'
 
 function ProtectedRoute({ session, children }) {
   if (!session) return <Navigate to="/login" replace />
   return children
+}
+
+function FullScreenBrand({ label }) {
+  const { c } = useTheme()
+  return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:c.bg }}>
+      <div style={{ fontFamily:c.font.heading, fontSize:48, fontWeight:c.weight.hero, color:c.accent, letterSpacing:8 }}>LSG</div>
+      {label && <span style={{ marginLeft:16, color:c.textMuted, fontFamily:c.font.body }}>{label}</span>}
+    </div>
+  )
 }
 
 export default function App() {
@@ -29,11 +41,7 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  if (session === undefined) return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#0f1d35' }}>
-      <div style={{ fontFamily:'Playfair Display,serif', fontSize:48, fontWeight:700, color:'#c9a84c', letterSpacing:8 }}>LSG</div>
-    </div>
-  )
+  if (session === undefined) return <FullScreenBrand />
 
   if (showSplash) return (
     <ToastProvider>
@@ -43,6 +51,7 @@ export default function App() {
 
   return (
     <ToastProvider>
+      <CommandPalette />
       <Routes>
         <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -75,9 +84,5 @@ function AuthCallback() {
       window.location.href = '/'
     })
   }, [])
-  return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#0f1d35', color:'#c9a84c', fontFamily:'DM Sans,sans-serif' }}>
-      Signing in...
-    </div>
-  )
+  return <FullScreenBrand label="Signing in…" />
 }

@@ -1,12 +1,8 @@
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
-import { PIPELINE_STAGES } from '../../lib/pricingDatabase';
+import { useTheme } from '../../theme/useTheme';
 import { useState } from 'react';
-
-const GOLD = '#c9a84c';
-const CREAM = '#f4f1eb';
-const NAVY = '#1c2b4a';
 
 function daysSince(dateStr) {
   if (!dateStr) return 0;
@@ -19,13 +15,12 @@ function formatValue(val) {
   return '$' + n.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' CAD';
 }
 
-function FollowUpBadge({ days }) {
+function FollowUpBadge({ days, c }) {
   if (days > 60) {
     return (
       <span style={{
-        fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-        background: 'rgba(220,38,38,0.18)', color: '#f87171', border: '1px solid rgba(220,38,38,0.3)',
-        fontFamily: "'DM Sans', sans-serif",
+        fontSize: c.text.xs, fontWeight: c.weight.button, padding: '2px 7px', borderRadius: c.radius.pill,
+        background: c.dangerSoft, color: c.danger, border: '1px solid ' + c.danger + '44',
       }}>
         Overdue
       </span>
@@ -34,9 +29,8 @@ function FollowUpBadge({ days }) {
   if (days >= 30) {
     return (
       <span style={{
-        fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-        background: 'rgba(217,119,6,0.18)', color: '#fbbf24', border: '1px solid rgba(217,119,6,0.3)',
-        fontFamily: "'DM Sans', sans-serif",
+        fontSize: c.text.xs, fontWeight: c.weight.button, padding: '2px 7px', borderRadius: c.radius.pill,
+        background: c.warningSoft, color: c.warning, border: '1px solid ' + c.warning + '44',
       }}>
         Due soon
       </span>
@@ -44,42 +38,17 @@ function FollowUpBadge({ days }) {
   }
   return (
     <span style={{
-      fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-      background: 'rgba(22,163,74,0.18)', color: '#4ade80', border: '1px solid rgba(22,163,74,0.3)',
-      fontFamily: "'DM Sans', sans-serif",
+      fontSize: c.text.xs, fontWeight: c.weight.button, padding: '2px 7px', borderRadius: c.radius.pill,
+      background: c.successSoft, color: c.success, border: '1px solid ' + c.success + '44',
     }}>
       Recent
     </span>
   );
 }
 
-const inputStyle = {
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: '7px 9px',
-  fontSize: 12.5,
-  border: '1px solid rgba(255,255,255,0.15)',
-  borderRadius: 6,
-  marginBottom: 8,
-  outline: 'none',
-  color: CREAM,
-  background: 'rgba(255,255,255,0.07)',
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-const labelStyle = {
-  display: 'block',
-  fontSize: 10,
-  fontWeight: 700,
-  color: GOLD,
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-  marginBottom: 3,
-  fontFamily: "'DM Sans', sans-serif",
-};
-
-function WarmCard({ deal, index, onRefresh }) {
+function WarmCard({ deal, index, onRefresh, onDelete }) {
   const addToast = useToast();
+  const { c } = useTheme();
   const days = daysSince(deal.created_at);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -110,6 +79,36 @@ function WarmCard({ deal, index, onRefresh }) {
     }
   }
 
+  function handleDelete(e) {
+    e.stopPropagation();
+    setEditing(false);
+    if (onDelete) onDelete(deal);
+  }
+
+  const inputStyle = {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '7px 9px',
+    fontSize: c.text.sm,
+    border: '1px solid ' + c.border,
+    borderRadius: c.radius.sm,
+    marginBottom: 8,
+    outline: 'none',
+    color: c.textPrimary,
+    background: c.surfaceHover,
+    fontFamily: c.font.body,
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: c.text.xs,
+    fontWeight: c.weight.label,
+    color: c.accent,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    marginBottom: 3,
+  };
+
   return (
     <Draggable draggableId={String(deal.id)} index={index}>
       {(provided, snapshot) => (
@@ -118,16 +117,14 @@ function WarmCard({ deal, index, onRefresh }) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           style={{
-            background: '#162238',
-            borderRadius: 8,
+            background: c.surface,
+            borderRadius: c.radius.md,
             padding: '11px 13px',
             marginBottom: 8,
-            boxShadow: snapshot.isDragging
-              ? '0 8px 32px rgba(0,0,0,0.5)'
-              : '0 2px 8px rgba(0,0,0,0.3)',
+            boxShadow: snapshot.isDragging ? c.shadowLg : c.shadowSm,
             border: snapshot.isDragging
-              ? `1.5px solid ${GOLD}`
-              : '1px solid rgba(201,168,76,0.25)',
+              ? '1.5px solid ' + c.accent
+              : '1px solid ' + c.border,
             position: 'relative',
             userSelect: 'none',
             transition: 'box-shadow 0.15s, border-color 0.15s',
@@ -137,14 +134,13 @@ function WarmCard({ deal, index, onRefresh }) {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontWeight: 700, fontSize: 13.5, color: CREAM,
+                fontWeight: c.weight.strong, fontSize: c.text.base, color: c.textPrimary,
                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                fontFamily: "'DM Sans', sans-serif",
               }}>
                 {deal.client_name || 'Unnamed Contact'}
               </div>
               {deal.quote_value > 0 && (
-                <div style={{ fontSize: 12, color: GOLD, marginTop: 1, fontFamily: "'DM Sans', sans-serif", opacity: 0.85 }}>
+                <div style={{ fontSize: c.text.sm, color: c.accent, marginTop: 1, opacity: 0.85 }}>
                   {formatValue(deal.quote_value)}
                 </div>
               )}
@@ -154,8 +150,8 @@ function WarmCard({ deal, index, onRefresh }) {
               title="Edit contact"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: '2px 4px', borderRadius: 4,
-                color: 'rgba(244,241,235,0.35)', flexShrink: 0,
+                padding: '2px 4px', borderRadius: c.radius.sm,
+                color: c.textMuted, flexShrink: 0,
               }}
             >
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -166,19 +162,18 @@ function WarmCard({ deal, index, onRefresh }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, flexWrap: 'wrap', gap: 4 }}>
-            <FollowUpBadge days={days} />
-            <span style={{ fontSize: 11, color: 'rgba(244,241,235,0.35)', fontFamily: "'DM Sans', sans-serif" }}>
+            <FollowUpBadge days={days} c={c} />
+            <span style={{ fontSize: c.text.xs, color: c.textMuted }}>
               {days === 0 ? 'Added today' : `${days}d ago`}
             </span>
           </div>
 
           {deal.notes && (
             <div style={{
-              marginTop: 7, fontSize: 11,
-              color: 'rgba(244,241,235,0.5)',
-              background: 'rgba(201,168,76,0.07)',
-              borderRadius: 4, padding: '3px 7px',
-              fontFamily: "'DM Sans', sans-serif",
+              marginTop: 7, fontSize: c.text.xs,
+              color: c.textMuted,
+              background: c.accentSoft,
+              borderRadius: c.radius.sm, padding: '3px 7px',
               overflow: 'hidden', maxHeight: 36,
             }}>
               {deal.notes}
@@ -190,16 +185,15 @@ function WarmCard({ deal, index, onRefresh }) {
               onClick={e => e.stopPropagation()}
               style={{
                 position: 'absolute', top: 0, left: 0, right: 0,
-                background: '#0f1d35',
-                borderRadius: 8,
-                boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
-                border: `2px solid ${GOLD}`,
+                background: c.surfaceElevated,
+                borderRadius: c.radius.md,
+                boxShadow: c.shadowLg,
+                border: '2px solid ' + c.accent,
                 padding: '14px 16px',
                 zIndex: 100,
-                fontFamily: "'DM Sans', sans-serif",
               }}
             >
-              <div style={{ fontWeight: 700, fontSize: 13, color: CREAM, marginBottom: 10 }}>Edit Contact</div>
+              <div style={{ fontWeight: c.weight.strong, fontSize: 13, color: c.textPrimary, marginBottom: 10 }}>Edit Contact</div>
               <form onSubmit={handleSave}>
                 <label style={labelStyle}>Name</label>
                 <input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} style={inputStyle} />
@@ -217,32 +211,44 @@ function WarmCard({ deal, index, onRefresh }) {
                   rows={2}
                   style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }}
                 />
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center' }}>
                   <button
                     type="button"
-                    onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
+                    onClick={handleDelete}
+                    title="Delete contact"
                     style={{
-                      padding: '5px 12px', fontSize: 12, borderRadius: 5,
-                      border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
-                      color: 'rgba(244,241,235,0.6)', cursor: 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
+                      padding: '5px 10px', fontSize: c.text.sm, borderRadius: c.radius.sm,
+                      border: '1px solid ' + c.danger + '88', background: 'transparent',
+                      color: c.danger, cursor: 'pointer',
                     }}
                   >
-                    Cancel
+                    Delete
                   </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    style={{
-                      padding: '5px 14px', fontSize: 12, fontWeight: 700,
-                      borderRadius: 5, border: 'none', background: GOLD,
-                      color: NAVY, cursor: saving ? 'not-allowed' : 'pointer',
-                      opacity: saving ? 0.7 : 1,
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    {saving ? 'Saving…' : 'Save'}
-                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => { setEditing(false); setForm({ client_name: deal.client_name || '', quote_value: deal.quote_value || '', notes: deal.notes || '' }); }}
+                      style={{
+                        padding: '5px 12px', fontSize: c.text.sm, borderRadius: c.radius.sm,
+                        border: '1px solid ' + c.border, background: 'transparent',
+                        color: c.textSecondary, cursor: 'pointer',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      style={{
+                        padding: '5px 14px', fontSize: c.text.sm, fontWeight: c.weight.button,
+                        borderRadius: c.radius.sm, border: 'none', background: c.accent,
+                        color: c.accentText, cursor: saving ? 'not-allowed' : 'pointer',
+                        opacity: saving ? 0.7 : 1,
+                      }}
+                    >
+                      {saving ? 'Saving…' : 'Save'}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -253,7 +259,8 @@ function WarmCard({ deal, index, onRefresh }) {
   );
 }
 
-export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddContact }) {
+export default function WarmHoldColumn({ deals = [], stage, onRefresh, onDelete, onAddContact }) {
+  const { c } = useTheme();
   const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.quote_value) || 0), 0);
   const overdueCount = deals.filter(d => daysSince(d.created_at) > 60).length;
 
@@ -264,52 +271,46 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
       maxWidth: 260,
       display: 'flex',
       flexDirection: 'column',
-      borderRadius: 10,
+      borderRadius: c.radius.lg,
       overflow: 'hidden',
-      border: `2px solid ${GOLD}`,
-      boxShadow: '0 2px 16px rgba(201,168,76,0.2)',
+      border: '2px solid ' + c.accent,
+      boxShadow: '0 2px 16px ' + c.accentSoft,
       flexShrink: 0,
     }}>
-      {/* Golden header */}
+      {/* Golden header — warm hold is intentionally styled with the accent gradient */}
       <div style={{
-        background: 'linear-gradient(135deg, #a8883c 0%, #c9a84c 50%, #e0b85a 100%)',
+        background: 'linear-gradient(135deg, ' + c.accentHover + ' 0%, ' + c.accent + ' 50%, ' + c.accent + 'cc 100%)',
         padding: '14px 14px 12px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <span style={{ fontSize: 18 }}>⏸</span>
           <span style={{
-            fontWeight: 800, fontSize: 14, color: '#fff', letterSpacing: '0.05em',
-            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: c.weight.hero, fontSize: 14, color: c.accentText, letterSpacing: '0.05em',
           }}>
             WARM HOLD
           </span>
           <span style={{
             marginLeft: 'auto',
             background: 'rgba(255,255,255,0.25)',
-            borderRadius: 999,
+            borderRadius: c.radius.pill,
             padding: '1px 8px',
             fontSize: 12,
-            fontWeight: 700,
-            color: '#fff',
-            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: c.weight.button,
+            color: c.accentText,
           }}>
             {deals.length}
           </span>
         </div>
-        <div style={{
-          fontSize: 11, color: 'rgba(255,255,255,0.85)',
-          fontFamily: "'DM Sans', sans-serif", marginBottom: 6,
-        }}>
+        <div style={{ fontSize: c.text.xs, color: c.accentText, opacity: 0.85, marginBottom: 6 }}>
           Architects &amp; Designers
         </div>
 
         <div style={{
           background: 'rgba(255,255,255,0.18)',
-          borderRadius: 5,
+          borderRadius: c.radius.sm,
           padding: '5px 9px',
-          fontSize: 11,
-          color: '#fff',
-          fontFamily: "'DM Sans', sans-serif",
+          fontSize: c.text.xs,
+          color: c.accentText,
           display: 'flex',
           alignItems: 'center',
           gap: 5,
@@ -319,11 +320,11 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
           {overdueCount > 0 && (
             <span style={{
               marginLeft: 'auto',
-              background: '#dc2626',
-              borderRadius: 999,
+              background: c.danger,
+              borderRadius: c.radius.pill,
               padding: '1px 7px',
-              fontSize: 10.5,
-              fontWeight: 700,
+              fontSize: c.text.xs,
+              fontWeight: c.weight.button,
               color: '#fff',
             }}>
               {overdueCount} overdue
@@ -332,10 +333,7 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
         </div>
 
         {totalValue > 0 && (
-          <div style={{
-            marginTop: 6, fontSize: 12, color: 'rgba(255,255,255,0.9)',
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
-          }}>
+          <div style={{ marginTop: 6, fontSize: 12, color: c.accentText, opacity: 0.9, fontWeight: c.weight.button }}>
             ${totalValue.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} CAD
           </div>
         )}
@@ -352,8 +350,8 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
               minHeight: 80,
               padding: '10px 10px 4px',
               background: snapshot.isDraggingOver
-                ? 'rgba(201,168,76,0.1)'
-                : 'rgba(255,255,255,0.03)',
+                ? c.accentSoft
+                : c.bg,
               transition: 'background 0.15s',
               overflowY: 'auto',
               maxHeight: 480,
@@ -361,14 +359,14 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
           >
             {deals.length === 0 && !snapshot.isDraggingOver && (
               <div style={{
-                textAlign: 'center', color: 'rgba(201,168,76,0.4)', fontSize: 12,
-                padding: '18px 0', fontFamily: "'DM Sans', sans-serif",
+                textAlign: 'center', color: c.textMuted, fontSize: c.text.sm,
+                padding: '18px 0',
               }}>
                 No warm contacts yet
               </div>
             )}
             {deals.map((deal, i) => (
-              <WarmCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} />
+              <WarmCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} onDelete={onDelete} />
             ))}
             {provided.placeholder}
           </div>
@@ -378,25 +376,25 @@ export default function WarmHoldColumn({ deals = [], stage, onRefresh, onAddCont
       {/* Add warm contact button */}
       <div style={{
         padding: '8px 10px',
-        background: 'rgba(255,255,255,0.03)',
-        borderTop: '1px solid rgba(201,168,76,0.2)',
+        background: c.bg,
+        borderTop: '1px solid ' + c.border,
       }}>
         <button
           onClick={onAddContact}
           style={{
             width: '100%',
             padding: '7px 0',
-            borderRadius: 6,
-            border: `1.5px dashed ${GOLD}`,
+            borderRadius: c.radius.sm,
+            border: '1.5px dashed ' + c.accent,
             background: 'transparent',
-            color: GOLD,
-            fontSize: 12,
-            fontWeight: 600,
+            color: c.accent,
+            fontSize: c.text.sm,
+            fontWeight: c.weight.button,
             cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: c.font.body,
             transition: 'background 0.15s',
           }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(201,168,76,0.1)'}
+          onMouseEnter={e => e.currentTarget.style.background = c.accentSoft}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
           + Add Warm Contact

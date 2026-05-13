@@ -1,9 +1,33 @@
-export default function ErrorBanner({ error, onRetry }) {
-  if (!error) return null
+import { useTheme } from '../../theme/useTheme'
+import { Button } from './Button'
+
+export default function ErrorBanner({ error, message, onRetry }) {
+  const { c } = useTheme()
+  // Support both `error` prop (standard) and legacy `message` prop used by EstimateList
+  const err = error || message
+  if (!err) return null
+  const displayMsg = err?.message || String(err)
   return (
-    <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:8, padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, margin:'16px 0' }}>
-      <span style={{ color:'#dc2626', fontFamily:'DM Sans,sans-serif', fontSize:14 }}>⚠️ {typeof error === 'string' ? error : error.message || 'Something went wrong'}</span>
-      {onRetry && <button onClick={onRetry} style={{ background:'#dc2626', color:'#fff', border:'none', borderRadius:6, padding:'6px 14px', cursor:'pointer', fontSize:13 }}>Retry</button>}
+    <div style={{
+      background: c.dangerSoft,
+      border: '1px solid ' + c.danger,
+      color: c.danger,
+      borderRadius: c.radius.md,
+      padding: '12px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      margin: '16px 0',
+      fontFamily: c.font.body,
+      fontSize: c.text.base,
+    }}>
+      <span>⚠️ {displayMsg}</span>
+      {onRetry && (
+        <Button variant="ghost" size="sm" onClick={onRetry}>
+          Retry
+        </Button>
+      )}
     </div>
   )
 }

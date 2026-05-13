@@ -1,11 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../lib/supabase'
-import { useToast } from '../ui/Toast'
-
-const NAVY = '#1c2b4a'
-const GOLD = '#c9a84c'
-const CREAM = '#f4f1eb'
-const BG = '#0f1d35'
+import { useState } from 'react'
+import { useTheme } from '../../theme/useTheme'
+import { Button } from '../ui/Button'
 
 function generateInvoiceNumber() {
   const now = new Date()
@@ -15,19 +10,31 @@ function generateInvoiceNumber() {
   return `INV-${yy}${mm}-${rand}`
 }
 
-const inputStyle = {
-  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)',
-  borderRadius: 6, padding: '8px 12px', color: CREAM, fontSize: 14,
-  outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit'
-}
-
-const labelStyle = {
-  fontSize: 11, fontWeight: 700, color: GOLD,
-  textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, display: 'block'
-}
-
 export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, settings = {} }) {
-  const addToast = useToast()
+  const { c } = useTheme()
+
+  const inputStyle = {
+    background: c.surfaceHover,
+    border: `1px solid ${c.border}`,
+    borderRadius: c.radius.sm,
+    padding: '8px 12px',
+    color: c.textPrimary,
+    fontSize: c.text.base,
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+    fontFamily: c.font.body,
+  }
+
+  const labelStyle = {
+    fontSize: c.text.xs,
+    fontWeight: c.weight.label,
+    color: c.accent,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    marginBottom: 5,
+    display: 'block',
+  }
 
   const [form, setForm] = useState({
     invoice_number:  invoice?.invoice_number || generateInvoiceNumber(),
@@ -110,10 +117,12 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
       due_date:       form.due_date || null,
       line_items:     form.line_items,
       deposit_pct:    parseFloat(form.deposit_pct) || 50,
+      tax_rate:       parseFloat(form.tax_pct) || 0,
       subtotal,
       hst_amount,
       hst_enabled:    (parseFloat(form.tax_pct) || 0) > 0,
       total_amount:   computed_total,
+      deposit_amount,
       amount_due,
       paid_date:      form.deposit_paid_ui ? new Date().toISOString() : null,
       status:         statusOverride || form.status || 'draft',
@@ -132,28 +141,28 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
+      position: 'fixed', inset: 0, background: c.overlay,
       zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      overflowY: 'auto', padding: '24px 16px', fontFamily: "'DM Sans', sans-serif"
+      overflowY: 'auto', padding: '24px 16px', fontFamily: c.font.body,
     }}>
       <div style={{
-        background: '#162238', borderRadius: 12, width: '100%', maxWidth: 780,
-        boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
-        border: '1px solid rgba(201,168,76,0.2)'
+        background: c.surface, borderRadius: c.radius.xl, width: '100%', maxWidth: 780,
+        boxShadow: c.shadowLg,
+        border: `1px solid ${c.border}`,
       }}>
         {/* Header */}
         <div style={{
-          background: NAVY, padding: '20px 28px', borderRadius: '12px 12px 0 0',
+          background: c.surfaceElevated, padding: '20px 28px', borderRadius: `${c.radius.xl}px ${c.radius.xl}px 0 0`,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          borderBottom: `2px solid rgba(201,168,76,0.3)`
+          borderBottom: `1px solid ${c.border}`,
         }}>
-          <h2 style={{ margin: 0, color: CREAM, fontSize: 18, fontWeight: 700 }}>
+          <h2 style={{ margin: 0, color: c.textPrimary, fontSize: c.text.lg, fontWeight: c.weight.strong }}>
             {invoice?.id ? 'Edit Invoice' : 'New Invoice'}
           </h2>
           <button onClick={onClose} style={{
-            background: 'rgba(255,255,255,0.1)', border: 'none', color: CREAM,
-            width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
-            fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            background: c.surfaceHover, border: 'none', color: c.textPrimary,
+            width: 32, height: 32, borderRadius: c.radius.sm, cursor: 'pointer',
+            fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>×</button>
         </div>
 
@@ -210,23 +219,23 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
               <button
                 onClick={addItem}
                 style={{
-                  background: 'rgba(201,168,76,0.12)', border: `1px solid rgba(201,168,76,0.3)`,
-                  color: GOLD, borderRadius: 6, padding: '5px 14px', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 600
+                  background: c.accentSoft, border: `1px solid ${c.accent}55`,
+                  color: c.accent, borderRadius: c.radius.sm, padding: '5px 14px', cursor: 'pointer',
+                  fontSize: c.text.sm, fontWeight: c.weight.strong, fontFamily: c.font.body,
                 }}
               >
                 + Add Item
               </button>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: c.text.base }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(201,168,76,0.25)' }}>
+                <tr style={{ borderBottom: `1px solid ${c.border}` }}>
                   {['Description', 'Qty', 'Unit Price', 'Total', ''].map(h => (
                     <th key={h} style={{
                       padding: '8px 10px', textAlign: 'left',
-                      color: GOLD, fontSize: 11, fontWeight: 700,
-                      textTransform: 'uppercase', letterSpacing: '0.06em'
+                      color: c.accent, fontSize: c.text.xs, fontWeight: c.weight.label,
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
                     }}>{h}</th>
                   ))}
                 </tr>
@@ -235,7 +244,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                 {form.line_items.map((item, i) => {
                   const lineTotal = (parseFloat(item.qty) || 0) * (parseFloat(item.unit_price) || 0)
                   return (
-                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <tr key={i} style={{ borderBottom: `1px solid ${c.border}` }}>
                       <td style={{ padding: '8px 10px', width: '45%' }}>
                         <input
                           style={inputStyle}
@@ -263,7 +272,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                           onChange={e => updateItem(i, 'unit_price', e.target.value)}
                         />
                       </td>
-                      <td style={{ padding: '8px 10px', color: CREAM, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '8px 10px', color: c.textPrimary, fontWeight: c.weight.strong, whiteSpace: 'nowrap' }}>
                         {fmt(lineTotal)}
                       </td>
                       <td style={{ padding: '8px 6px' }}>
@@ -271,10 +280,11 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                           onClick={() => removeItem(i)}
                           disabled={form.line_items.length === 1}
                           style={{
-                            background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.25)',
-                            color: '#fca5a5', borderRadius: 6, padding: '4px 8px',
+                            background: c.dangerSoft, border: `1px solid ${c.danger}44`,
+                            color: c.danger, borderRadius: c.radius.sm, padding: '4px 8px',
                             cursor: form.line_items.length === 1 ? 'not-allowed' : 'pointer',
-                            opacity: form.line_items.length === 1 ? 0.4 : 1, fontSize: 13
+                            opacity: form.line_items.length === 1 ? 0.4 : 1, fontSize: c.text.sm,
+                            fontFamily: c.font.body,
                           }}
                         >✕</button>
                       </td>
@@ -302,7 +312,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
             <div>
               <label style={labelStyle}>
                 Deposit % — {form.deposit_pct}%
-                <span style={{ color: 'rgba(244,241,235,0.4)', fontWeight: 400, textTransform: 'none', fontSize: 12, marginLeft: 8 }}>
+                <span style={{ color: c.textMuted, fontWeight: 400, textTransform: 'none', fontSize: c.text.sm, marginLeft: 8 }}>
                   (Deposit: {fmt(depositAmt)} | Balance: {fmt(balanceDue)})
                 </span>
               </label>
@@ -313,9 +323,9 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                 step="5"
                 value={form.deposit_pct}
                 onChange={e => setField('deposit_pct', parseInt(e.target.value))}
-                style={{ width: '100%', accentColor: GOLD, marginTop: 10 }}
+                style={{ width: '100%', accentColor: c.accent, marginTop: 10 }}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(244,241,235,0.4)', marginTop: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: c.text.xs, color: c.textMuted, marginTop: 4 }}>
                 <span>0%</span><span>50%</span><span>100%</span>
               </div>
             </div>
@@ -328,9 +338,9 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
               id="deposit_paid"
               checked={form.deposit_paid_ui}
               onChange={e => setField('deposit_paid_ui', e.target.checked)}
-              style={{ width: 16, height: 16, accentColor: GOLD, cursor: 'pointer' }}
+              style={{ width: 16, height: 16, accentColor: c.accent, cursor: 'pointer' }}
             />
-            <label htmlFor="deposit_paid" style={{ color: CREAM, fontSize: 14, cursor: 'pointer' }}>
+            <label htmlFor="deposit_paid" style={{ color: c.textPrimary, fontSize: c.text.base, cursor: 'pointer' }}>
               Deposit has been received
             </label>
           </div>
@@ -349,9 +359,9 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
 
           {/* Totals */}
           <div style={{
-            background: 'rgba(255,255,255,0.04)', borderRadius: 10,
+            background: c.surfaceHover, borderRadius: c.radius.lg,
             padding: '16px 20px', marginBottom: 24,
-            border: '1px solid rgba(201,168,76,0.15)'
+            border: `1px solid ${c.border}`,
           }}>
             {[
               ['Subtotal', fmt(subtotal)],
@@ -363,14 +373,15 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
               <div key={label} style={{
                 display: 'flex', justifyContent: 'space-between',
                 padding: '6px 0',
-                borderTop: i === 2 ? `1px solid rgba(201,168,76,0.3)` : 'none',
-                borderBottom: i === 2 ? `1px solid rgba(201,168,76,0.3)` : 'none',
-                marginTop: i === 2 ? 6 : 0, marginBottom: i === 2 ? 6 : 0
+                borderTop: i === 2 ? `1px solid ${c.borderStrong}` : 'none',
+                borderBottom: i === 2 ? `1px solid ${c.borderStrong}` : 'none',
+                marginTop: i === 2 ? 6 : 0, marginBottom: i === 2 ? 6 : 0,
               }}>
-                <span style={{ color: 'rgba(244,241,235,0.6)', fontSize: 14 }}>{label}</span>
+                <span style={{ color: c.textMuted, fontSize: c.text.base }}>{label}</span>
                 <span style={{
-                  color: i === 2 ? GOLD : CREAM,
-                  fontWeight: i === 2 ? 700 : 500, fontSize: i === 2 ? 16 : 14
+                  color: i === 2 ? c.accent : c.textPrimary,
+                  fontWeight: i === 2 ? c.weight.strong : c.weight.body,
+                  fontSize: i === 2 ? c.text.md : c.text.base,
                 }}>
                   {value}
                 </span>
@@ -380,36 +391,9 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-            <button
-              onClick={onClose}
-              style={{
-                background: 'transparent', border: '1px solid rgba(255,255,255,0.2)',
-                color: CREAM, borderRadius: 8, padding: '10px 22px',
-                cursor: 'pointer', fontSize: 14
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveDraft}
-              style={{
-                background: 'rgba(201,168,76,0.15)', border: `1px solid ${GOLD}`,
-                color: GOLD, borderRadius: 8, padding: '10px 22px',
-                cursor: 'pointer', fontSize: 14, fontWeight: 600
-              }}
-            >
-              Save Draft
-            </button>
-            <button
-              onClick={handleGeneratePDF}
-              style={{
-                background: GOLD, color: NAVY, border: 'none',
-                borderRadius: 8, padding: '10px 26px',
-                cursor: 'pointer', fontSize: 14, fontWeight: 700
-              }}
-            >
-              Generate PDF →
-            </button>
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="secondary" onClick={handleSaveDraft}>Save Draft</Button>
+            <Button variant="primary" onClick={handleGeneratePDF}>Generate PDF →</Button>
           </div>
         </div>
       </div>

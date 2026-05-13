@@ -1,22 +1,21 @@
 import { useMemo, useState } from 'react'
-
-const NAVY = '#1c2b4a'
-const GOLD = '#c9a84c'
-const CREAM = '#f4f1eb'
+import { useTheme } from '../../theme/useTheme'
+import EmptyState from '../ui/EmptyState'
 
 const today = new Date().toISOString().split('T')[0]
 
-function statusStyle(status, due_date) {
+function statusStyle(status, due_date, c) {
   const isOverdue = status !== 'paid' && due_date && due_date < today
-  if (isOverdue) return { bg: 'rgba(239,68,68,0.15)', color: '#fca5a5', label: 'Overdue' }
+  if (isOverdue) return { bg: c.dangerSoft, color: c.danger, label: 'Overdue' }
   switch ((status || '').toLowerCase()) {
-    case 'paid':  return { bg: 'rgba(16,185,129,0.15)',  color: '#6ee7b7', label: 'Paid'  }
-    case 'sent':  return { bg: 'rgba(59,130,246,0.15)',  color: '#93c5fd', label: 'Sent'  }
-    default:      return { bg: 'rgba(107,114,128,0.2)',  color: '#d1d5db', label: 'Draft' }
+    case 'paid':  return { bg: c.successSoft,   color: c.success,    label: 'Paid'  }
+    case 'sent':  return { bg: c.highlightSoft,  color: c.highlight,  label: 'Sent'  }
+    default:      return { bg: c.accentSoft,     color: c.textMuted,  label: 'Draft' }
   }
 }
 
 export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMarkPaid }) {
+  const { c } = useTheme()
   const [hoveredRow, setHoveredRow] = useState(null)
 
   const sorted = useMemo(() =>
@@ -26,11 +25,11 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
 
   if (sorted.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 20px', color: 'rgba(244,241,235,0.4)' }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🧾</div>
-        <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}>No invoices yet</div>
-        <div style={{ fontSize: 13 }}>Click "+ New Invoice" to create your first invoice</div>
-      </div>
+      <EmptyState
+        illustration="EmptyInvoices"
+        title="No invoices yet"
+        message="Generate one from an estimate."
+      />
     )
   }
 
@@ -39,21 +38,21 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
 
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: c.text.base }}>
         <thead>
-          <tr style={{ borderBottom: `2px solid rgba(201,168,76,0.3)` }}>
+          <tr style={{ borderBottom: `2px solid ${c.borderStrong}` }}>
             {['Invoice #', 'Client', 'Date', 'Due Date', 'Amount', 'Deposit', 'Status', ''].map(h => (
               <th key={h} style={{
                 padding: '12px 16px', textAlign: 'left',
-                color: 'rgba(244,241,235,0.55)', fontSize: 12, fontWeight: 700,
-                textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap'
+                color: c.textMuted, fontSize: c.text.xs, fontWeight: c.weight.label,
+                textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap',
               }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {sorted.map(inv => {
-            const { bg, color, label } = statusStyle(inv.status, inv.due_date)
+            const { bg, color, label } = statusStyle(inv.status, inv.due_date, c)
             const isHovered = hoveredRow === inv.id
             const canMarkPaid = !['paid'].includes((inv.status || '').toLowerCase())
 
@@ -64,40 +63,41 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                 onMouseLeave={() => setHoveredRow(null)}
                 onClick={() => onSelect(inv)}
                 style={{
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  borderBottom: `1px solid ${c.border}`,
                   cursor: 'pointer',
-                  background: isHovered ? 'rgba(201,168,76,0.06)' : 'transparent',
-                  borderLeft: isHovered ? `3px solid ${GOLD}` : '3px solid transparent',
-                  transition: 'all 0.15s'
+                  background: isHovered ? c.surfaceHover : 'transparent',
+                  borderLeft: isHovered ? `3px solid ${c.accent}` : '3px solid transparent',
+                  transition: 'all 0.15s',
                 }}
               >
                 <td style={{ padding: '14px 16px' }}>
-                  <span style={{ color: GOLD, fontWeight: 700 }}>
+                  <span style={{ color: c.accent, fontWeight: c.weight.strong }}>
                     {inv.invoice_number || `INV-${String(inv.id).slice(-4).toUpperCase()}`}
                   </span>
                 </td>
-                <td style={{ padding: '14px 16px', color: CREAM, fontWeight: 500 }}>
+                <td style={{ padding: '14px 16px', color: c.textPrimary, fontWeight: c.weight.body }}>
                   {inv.client_name || '—'}
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.6)' }}>
+                <td style={{ padding: '14px 16px', color: c.textMuted }}>
                   {fmtDate(inv.created_at)}
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.6)' }}>
+                <td style={{ padding: '14px 16px', color: c.textMuted }}>
                   {fmtDate(inv.due_date)}
                 </td>
-                <td style={{ padding: '14px 16px', color: CREAM, fontWeight: 600 }}>
+                <td style={{ padding: '14px 16px', color: c.textPrimary, fontWeight: c.weight.strong }}>
                   {fmtMoney(inv.total_amount)}
                 </td>
-                <td style={{ padding: '14px 16px', color: 'rgba(244,241,235,0.7)' }}>
+                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
                   {inv.paid_date
-                    ? <span style={{ color: '#6ee7b7' }}>✓ {fmtMoney((inv.total_amount || 0) * (inv.deposit_pct || 50) / 100)}</span>
-                    : <span style={{ color: 'rgba(244,241,235,0.35)' }}>—</span>
+                    ? <span style={{ color: c.success }}>✓ {fmtMoney((inv.total_amount || 0) * (inv.deposit_pct || 50) / 100)}</span>
+                    : <span style={{ color: c.textMuted }}>—</span>
                   }
                 </td>
                 <td style={{ padding: '14px 16px' }}>
                   <span style={{
-                    background: bg, color, borderRadius: 12,
-                    padding: '3px 12px', fontSize: 12, fontWeight: 700
+                    background: bg, color,
+                    borderRadius: c.radius.pill,
+                    padding: '3px 12px', fontSize: c.text.xs, fontWeight: c.weight.label,
                   }}>
                     {label}
                   </span>
@@ -111,9 +111,9 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                       <button
                         onClick={() => onMarkPaid(inv.id)}
                         style={{
-                          background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)',
-                          color: '#6ee7b7', borderRadius: 6, padding: '5px 10px',
-                          cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap'
+                          background: c.successSoft, border: `1px solid ${c.success}55`,
+                          color: c.success, borderRadius: c.radius.sm, padding: '5px 10px',
+                          cursor: 'pointer', fontSize: c.text.xs, fontWeight: c.weight.strong, whiteSpace: 'nowrap',
                         }}
                       >
                         Mark Paid
@@ -122,9 +122,9 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                     <button
                       onClick={() => onSelect(inv)}
                       style={{
-                        background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)',
-                        color: '#93c5fd', borderRadius: 6, padding: '5px 10px',
-                        cursor: 'pointer', fontSize: 12, fontWeight: 600
+                        background: c.highlightSoft, border: `1px solid ${c.highlight}55`,
+                        color: c.highlight, borderRadius: c.radius.sm, padding: '5px 10px',
+                        cursor: 'pointer', fontSize: c.text.xs, fontWeight: c.weight.strong,
                       }}
                       title="View PDF"
                     >
@@ -133,9 +133,9 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                     <button
                       onClick={() => onEdit(inv)}
                       style={{
-                        background: 'rgba(201,168,76,0.12)', border: `1px solid rgba(201,168,76,0.3)`,
-                        color: GOLD, borderRadius: 6, padding: '5px 10px',
-                        cursor: 'pointer', fontSize: 12, fontWeight: 600
+                        background: c.accentSoft, border: `1px solid ${c.accent}55`,
+                        color: c.accent, borderRadius: c.radius.sm, padding: '5px 10px',
+                        cursor: 'pointer', fontSize: c.text.xs, fontWeight: c.weight.strong,
                       }}
                       title="Edit"
                     >
@@ -146,9 +146,9 @@ export default function InvoiceList({ invoices, onSelect, onEdit, onDelete, onMa
                         if (window.confirm('Delete this invoice?')) onDelete(inv.id)
                       }}
                       style={{
-                        background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.3)',
-                        color: '#fca5a5', borderRadius: 6, padding: '5px 10px',
-                        cursor: 'pointer', fontSize: 14
+                        background: c.dangerSoft, border: `1px solid ${c.danger}55`,
+                        color: c.danger, borderRadius: c.radius.sm, padding: '5px 10px',
+                        cursor: 'pointer', fontSize: 14,
                       }}
                       title="Delete"
                     >

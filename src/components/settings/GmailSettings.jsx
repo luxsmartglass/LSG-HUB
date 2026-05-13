@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useToast } from '../ui/Toast'
+import { useTheme } from '../../theme/useTheme'
+import { Button } from '../ui/Button'
 import { sendEmail } from '../../lib/gmailApi'
-
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  bg: '#0f1d35',
-  cardBg: '#162236',
-}
 
 function loadGIS() {
   return new Promise(resolve => {
@@ -21,19 +15,20 @@ function loadGIS() {
 }
 
 export default function GmailSettings() {
+  const { c } = useTheme()
   const addToast = useToast()
 
   const [token, setToken] = useState(null)
   const [email, setEmail] = useState(null)
   const [connecting, setConnecting] = useState(false)
   const [testing, setTesting] = useState(false)
-  const [tokenClient, setTokenClient] = useState(null)
 
   // Restore token from localStorage on mount
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('lsg_gmail_tokens') || 'null')
       if (stored?.access_token && Date.now() < stored.expires_at - 30000) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: one-time init from localStorage on mount
         setToken(stored.access_token)
         setEmail(stored.email || 'Connected Account')
       }
@@ -80,9 +75,8 @@ export default function GmailSettings() {
           setConnecting(false)
         },
       })
-      setTokenClient(client)
       client.requestAccessToken()
-    } catch (err) {
+    } catch {
       addToast('Failed to load Google Identity Services', 'error')
       setConnecting(false)
     }
@@ -96,7 +90,6 @@ export default function GmailSettings() {
     localStorage.removeItem('lsg_gmail_tokens')
     setToken(null)
     setEmail(null)
-    setTokenClient(null)
     addToast('Gmail disconnected', 'success')
   }
 
@@ -121,18 +114,19 @@ export default function GmailSettings() {
 
   return (
     <div style={{
-      background: COLORS.cardBg,
-      borderRadius: 14,
+      background: c.surface,
+      borderRadius: c.radius.lg,
       padding: 24,
-      border: '1px solid #1e3352',
+      border: `1px solid ${c.border}`,
+      boxShadow: c.shadowSm,
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <div style={{
           width: 40,
           height: 40,
-          borderRadius: 10,
-          background: '#1a2f50',
+          borderRadius: c.radius.md,
+          background: c.accentSoft,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -141,10 +135,10 @@ export default function GmailSettings() {
           ✉️
         </div>
         <div>
-          <h3 style={{ color: COLORS.cream, fontSize: 15, fontWeight: 700, margin: 0 }}>
+          <h3 style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.strong, margin: 0 }}>
             Gmail Integration
           </h3>
-          <p style={{ color: '#8a9bb5', fontSize: 12.5, margin: '2px 0 0' }}>
+          <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: '2px 0 0' }}>
             Connect your Gmail to send estimates, invoices, and follow-ups
           </p>
         </div>
@@ -152,8 +146,8 @@ export default function GmailSettings() {
 
       {/* Status */}
       <div style={{
-        background: '#0f1d35',
-        borderRadius: 10,
+        background: c.surfaceHover,
+        borderRadius: c.radius.md,
         padding: '14px 16px',
         marginBottom: 18,
         display: 'flex',
@@ -167,15 +161,15 @@ export default function GmailSettings() {
             width: 10,
             height: 10,
             borderRadius: '50%',
-            background: isConnected ? '#22c55e' : '#637a96',
+            background: isConnected ? c.success : c.textMuted,
             flexShrink: 0,
           }} />
           <div>
-            <p style={{ color: isConnected ? '#22c55e' : '#8a9bb5', fontSize: 13.5, fontWeight: 600, margin: 0 }}>
+            <p style={{ color: isConnected ? c.success : c.textMuted, fontSize: c.text.sm, fontWeight: c.weight.strong, margin: 0 }}>
               {isConnected ? 'Connected' : 'Not Connected'}
             </p>
             {isConnected && email && (
-              <p style={{ color: '#8a9bb5', fontSize: 12, margin: '2px 0 0' }}>{email}</p>
+              <p style={{ color: c.textMuted, fontSize: c.text.xs, margin: '2px 0 0' }}>{email}</p>
             )}
           </div>
         </div>
@@ -183,77 +177,45 @@ export default function GmailSettings() {
         <div style={{ display: 'flex', gap: 8 }}>
           {isConnected ? (
             <>
-              <button
-                onClick={handleTestEmail}
-                disabled={testing}
-                style={{
-                  padding: '7px 16px',
-                  borderRadius: 7,
-                  border: `1px solid #1e3352`,
-                  background: 'transparent',
-                  color: COLORS.cream,
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  cursor: testing ? 'not-allowed' : 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
-                  opacity: testing ? 0.6 : 1,
-                }}
-              >
+              <Button variant="ghost" size="sm" loading={testing} onClick={handleTestEmail}>
                 {testing ? 'Sending…' : 'Test Email'}
-              </button>
+              </Button>
               <button
                 onClick={handleDisconnect}
                 style={{
                   padding: '7px 16px',
-                  borderRadius: 7,
-                  border: '1px solid #ef444455',
+                  borderRadius: c.radius.sm,
+                  border: `1px solid ${c.danger}55`,
                   background: 'transparent',
-                  color: '#ef4444',
-                  fontSize: 12.5,
-                  fontWeight: 600,
+                  color: c.danger,
+                  fontSize: c.text.sm,
+                  fontWeight: c.weight.strong,
                   cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: c.font.body,
                 }}
               >
                 Disconnect
               </button>
             </>
           ) : (
-            <button
-              onClick={handleConnect}
-              disabled={connecting}
-              style={{
-                padding: '9px 20px',
-                borderRadius: 8,
-                border: 'none',
-                background: COLORS.gold,
-                color: '#0f1d35',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: connecting ? 'not-allowed' : 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                opacity: connecting ? 0.7 : 1,
-                transition: 'opacity 0.15s',
-              }}
-            >
+            <Button variant="primary" loading={connecting} onClick={handleConnect}>
               {connecting ? 'Connecting…' : 'Connect Gmail'}
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* Info box */}
       <div style={{
-        background: '#0f1d2200',
-        border: '1px solid #1e3352',
-        borderRadius: 9,
+        border: `1px solid ${c.border}`,
+        borderRadius: c.radius.sm,
         padding: '12px 14px',
         display: 'flex',
         alignItems: 'flex-start',
         gap: 10,
       }}>
         <span style={{ fontSize: 15, flexShrink: 0, marginTop: 1 }}>🔒</span>
-        <p style={{ color: '#8a9bb5', fontSize: 12.5, margin: 0, lineHeight: 1.6 }}>
+        <p style={{ color: c.textMuted, fontSize: c.text.sm, margin: 0, lineHeight: c.leading.normal }}>
           Your Gmail credentials are never stored on our servers. The OAuth token is kept in browser memory only and is used solely to send emails on your behalf.
         </p>
       </div>

@@ -1,12 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-
-const COLORS = {
-  navy: '#1c2b4a',
-  gold: '#c9a84c',
-  cream: '#f4f1eb',
-  bg: '#0f1d35',
-  cardBg: '#162236',
-}
+import { useTheme } from '../../theme/useTheme'
 
 const GREETING = "👋 Hi! I'm ARIA — your AI Revenue Intelligence Assistant for Lux Smart Glass. I can help you analyze your pipeline, forecast revenue, and surface opportunities. What would you like to know?"
 
@@ -27,7 +20,7 @@ function getAriaResponse(text) {
   return "I'm analyzing your business data. Ask me about your pipeline, revenue projections, or specific deals and I'll provide insights."
 }
 
-function TypingDots() {
+function TypingDots({ c }) {
   const [frame, setFrame] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setFrame(f => (f + 1) % 4), 400)
@@ -35,50 +28,50 @@ function TypingDots() {
   }, [])
   const dots = '.'.repeat(frame)
   return (
-    <span style={{ letterSpacing: 2, color: '#8a9bb5', fontSize: 14 }}>
+    <span style={{ letterSpacing: 2, color: c.textMuted, fontSize: c.text.base }}>
       ARIA is thinking{dots}
     </span>
   )
 }
 
-function AriaBubble({ text, isTyping }) {
+function AriaBubble({ text, isTyping, c }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, maxWidth: '72%' }}>
       <span style={{
-        color: COLORS.gold,
-        fontSize: 10.5,
-        fontWeight: 700,
+        color: c.accent,
+        fontSize: c.text.xs,
+        fontWeight: c.weight.label,
         letterSpacing: '0.08em',
         paddingLeft: 2,
       }}>
         ARIA
       </span>
       <div style={{
-        background: COLORS.navy,
-        color: '#e2e8f0',
+        background: c.surface,
+        color: c.textPrimary,
         padding: '11px 15px',
-        borderRadius: '4px 14px 14px 14px',
-        fontSize: 13.5,
-        lineHeight: 1.6,
-        border: '1px solid #1e3352',
+        borderRadius: `${c.radius.sm}px ${c.radius.lg}px ${c.radius.lg}px ${c.radius.lg}px`,
+        fontSize: c.text.sm,
+        lineHeight: c.leading.normal,
+        border: `1px solid ${c.border}`,
       }}>
-        {isTyping ? <TypingDots /> : text}
+        {isTyping ? <TypingDots c={c} /> : text}
       </div>
     </div>
   )
 }
 
-function UserBubble({ text }) {
+function UserBubble({ text, c }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <div style={{
-        background: COLORS.gold,
-        color: '#0f1d35',
+        background: c.accent,
+        color: c.accentText,
         padding: '11px 15px',
-        borderRadius: '14px 4px 14px 14px',
-        fontSize: 13.5,
-        fontWeight: 500,
-        lineHeight: 1.6,
+        borderRadius: `${c.radius.lg}px ${c.radius.sm}px ${c.radius.lg}px ${c.radius.lg}px`,
+        fontSize: c.text.sm,
+        fontWeight: c.weight.body,
+        lineHeight: c.leading.normal,
         maxWidth: '72%',
       }}>
         {text}
@@ -88,6 +81,7 @@ function UserBubble({ text }) {
 }
 
 export default function AriaChat() {
+  const { c } = useTheme()
   const [messages, setMessages] = useState([
     { id: 0, role: 'aria', text: GREETING },
   ])
@@ -131,10 +125,11 @@ export default function AriaChat() {
       flexDirection: 'column',
       height: '100%',
       minHeight: 0,
-      background: COLORS.cardBg,
-      borderRadius: 14,
-      border: '1px solid #1e3352',
+      background: c.surface,
+      borderRadius: c.radius.lg,
+      border: `1px solid ${c.border}`,
       overflow: 'hidden',
+      boxShadow: c.shadowMd,
     }}>
       {/* Messages area */}
       <div style={{
@@ -145,27 +140,27 @@ export default function AriaChat() {
         flexDirection: 'column',
         gap: 16,
         scrollbarWidth: 'thin',
-        scrollbarColor: '#1e3352 transparent',
+        scrollbarColor: `${c.border} transparent`,
       }}>
         {messages.map(msg =>
           msg.role === 'user'
-            ? <UserBubble key={msg.id} text={msg.text} />
-            : <AriaBubble key={msg.id} text={msg.text} />
+            ? <UserBubble key={msg.id} text={msg.text} c={c} />
+            : <AriaBubble key={msg.id} text={msg.text} c={c} />
         )}
         {thinking && (
-          <AriaBubble isTyping />
+          <AriaBubble isTyping c={c} />
         )}
         <div ref={bottomRef} />
       </div>
 
       {/* Input bar */}
       <div style={{
-        borderTop: '1px solid #1e3352',
+        borderTop: `1px solid ${c.border}`,
         padding: '14px 16px',
         display: 'flex',
         gap: 10,
         alignItems: 'center',
-        background: '#0f1d35',
+        background: c.surfaceHover,
       }}>
         <input
           ref={inputRef}
@@ -178,14 +173,14 @@ export default function AriaChat() {
           disabled={thinking}
           style={{
             flex: 1,
-            background: COLORS.cardBg,
-            border: `1px solid ${inputFocused ? COLORS.gold : '#1e3352'}`,
-            borderRadius: 9,
-            color: COLORS.cream,
-            fontSize: 13.5,
+            background: c.surface,
+            border: `1px solid ${inputFocused ? c.accent : c.border}`,
+            borderRadius: c.radius.md,
+            color: c.textPrimary,
+            fontSize: c.text.sm,
             padding: '10px 14px',
             outline: 'none',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: c.font.body,
             transition: 'border-color 0.15s',
             opacity: thinking ? 0.6 : 1,
           }}
@@ -196,10 +191,10 @@ export default function AriaChat() {
           style={{
             width: 40,
             height: 40,
-            borderRadius: 9,
+            borderRadius: c.radius.md,
             border: 'none',
-            background: input.trim() && !thinking ? COLORS.gold : '#1e3352',
-            color: input.trim() && !thinking ? '#0f1d35' : '#637a96',
+            background: input.trim() && !thinking ? c.accent : c.surfaceHover,
+            color: input.trim() && !thinking ? c.accentText : c.textMuted,
             cursor: input.trim() && !thinking ? 'pointer' : 'not-allowed',
             fontSize: 18,
             display: 'flex',

@@ -9,6 +9,7 @@ export function useQuery(queryFn, deps = []) {
 
   useEffect(() => {
     let cancelled = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: loading state set at effect start, updated in async callback
     setLoading(true)
     setError(null)
     queryFn().then(({ data, error }) => {

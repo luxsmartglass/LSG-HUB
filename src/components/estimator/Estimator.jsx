@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
+import { useTheme } from '../../theme/useTheme'
 import { calcQuote } from '../../lib/pricingDatabase'
 import ZoneBuilder from './ZoneBuilder'
 import QuoteSidebar from './QuoteSidebar'
@@ -26,6 +27,7 @@ export default function Estimator() {
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
+  const { c } = useTheme()
   const [w, setW] = useState(DEFAULT_WIZARD)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({})
@@ -39,6 +41,7 @@ export default function Estimator() {
 
   useEffect(() => {
     if (location.state?.prefill) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: one-time prefill from navigation state
       setW(prev => ({ ...prev, ...location.state.prefill }))
     }
   }, [])
@@ -110,8 +113,62 @@ export default function Estimator() {
     }
   }
 
+  const inputStyle = {
+    width: '100%',
+    padding: '9px 12px',
+    border: '1px solid ' + c.border,
+    borderRadius: c.radius.md,
+    fontFamily: c.font.body,
+    fontSize: c.text.base,
+    color: c.textPrimary,
+    background: c.surfaceHover,
+    outline: 'none',
+    boxSizing: 'border-box',
+  }
+
+  const goldBtn = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '9px 18px',
+    background: c.accent, color: c.accentText,
+    border: 'none', borderRadius: c.radius.md,
+    fontSize: c.text.base, fontWeight: c.weight.button,
+    cursor: 'pointer', fontFamily: c.font.body,
+  }
+
+  const navyBtn = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '9px 18px',
+    background: c.surfaceElevated, color: c.textPrimary,
+    border: '1px solid ' + c.border, borderRadius: c.radius.md,
+    fontSize: c.text.base, fontWeight: c.weight.body,
+    cursor: 'pointer', fontFamily: c.font.body,
+  }
+
+  const ghostBtn = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '9px 18px',
+    background: 'transparent', color: c.textSecondary,
+    border: '1px solid ' + c.border, borderRadius: c.radius.md,
+    fontSize: c.text.base, fontWeight: c.weight.body,
+    cursor: 'pointer', fontFamily: c.font.body,
+  }
+
+  const labelStyle = {
+    fontSize: c.text.xs, fontWeight: c.weight.label,
+    color: c.accent, textTransform: 'uppercase',
+    letterSpacing: '0.08em', marginBottom: 5, display: 'block',
+  }
+
+  const cardStyle = {
+    background: c.surface,
+    borderRadius: c.radius.lg,
+    border: '1px solid ' + c.border,
+    padding: 24,
+    marginBottom: 16,
+  }
+
   return (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', animation: 'fadeUp 0.35s ease both' }}>
+    <div className="fade-up" style={{ display: 'flex', gap: 24, alignItems: 'flex-start', animation: 'fadeUp 0.35s ease both' }}>
       {showPdf && savedEstimate && <EstimatePDF estimate={savedEstimate} onClose={() => setShowPdf(false)} />}
       {/* MAIN */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -123,13 +180,23 @@ export default function Estimator() {
             return (
               <div key={s} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
                 <div style={{
-                  width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 13, fontWeight: 600, flexShrink: 0,
-                  background: cls === 'done' ? '#059669' : cls === 'active' ? '#c9a84c' : 'rgba(255,255,255,0.1)',
-                  color: cls === 'active' ? '#1c2b4a' : cls === 'pending' ? 'rgba(244,241,235,0.4)' : '#fff'
+                  background: cls === 'done' ? c.success : cls === 'active' ? c.accent : c.surfaceHover,
+                  color: cls === 'pending' ? c.textMuted : c.accentText,
                 }}>{cls === 'done' ? '✓' : n}</div>
-                <div style={{ marginLeft: 10, fontSize: 13, fontWeight: 500, color: cls === 'active' ? '#f4f1eb' : cls === 'done' ? '#6ee7b7' : 'rgba(244,241,235,0.4)', whiteSpace: 'nowrap' }}>{s}</div>
-                {i < STEPS.length - 1 && <div style={{ flex: 1, height: 2, background: n < w.step ? '#059669' : 'rgba(255,255,255,0.12)', margin: '0 8px' }} />}
+                <div style={{
+                  marginLeft: 10, fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap',
+                  color: cls === 'active' ? c.textPrimary : cls === 'done' ? c.success : c.textMuted,
+                }}>{s}</div>
+                {i < STEPS.length - 1 && (
+                  <div style={{
+                    flex: 1, height: 2,
+                    background: n < w.step ? c.success : c.border,
+                    margin: '0 8px',
+                  }} />
+                )}
               </div>
             )
           })}
@@ -137,29 +204,29 @@ export default function Estimator() {
 
         {/* Step 1 */}
         {w.step === 1 && (
-          <div style={{ background: '#162238', borderRadius: 10, border: '1px solid rgba(201,168,76,0.15)', padding: 24, marginBottom: 16 }}>
-            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, marginBottom: 18, color: '#c9a84c' }}>Project Info</div>
+          <div style={cardStyle}>
+            <div style={{ fontFamily: c.font.heading, fontSize: c.text.md, marginBottom: 18, color: c.accent }}>Project Info</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <Field label="Client Name *" value={w.client_name} onChange={v => set('client_name', v)} placeholder="e.g. John Doe" />
-              <Field label="Organization / Firm" value={w.org} onChange={v => set('org', v)} placeholder="e.g. Acme Corp" />
-              <Field label="Client Email" value={w.email} onChange={v => set('email', v)} placeholder="client@email.com" type="email" />
-              <Field label="Client Phone" value={w.phone} onChange={v => set('phone', v)} placeholder="+1 416 000 0000" />
+              <Field label="Client Name *" value={w.client_name} onChange={v => set('client_name', v)} placeholder="e.g. John Doe" inputStyle={inputStyle} labelStyle={labelStyle} />
+              <Field label="Organization / Firm" value={w.org} onChange={v => set('org', v)} placeholder="e.g. Acme Corp" inputStyle={inputStyle} labelStyle={labelStyle} />
+              <Field label="Client Email" value={w.email} onChange={v => set('email', v)} placeholder="client@email.com" type="email" inputStyle={inputStyle} labelStyle={labelStyle} />
+              <Field label="Client Phone" value={w.phone} onChange={v => set('phone', v)} placeholder="+1 416 000 0000" inputStyle={inputStyle} labelStyle={labelStyle} />
             </div>
             <div style={{ marginBottom: 16 }}>
-              <Field label="Project Address" value={w.address} onChange={v => set('address', v)} placeholder="123 Main St, Toronto, ON" />
+              <Field label="Project Address" value={w.address} onChange={v => set('address', v)} placeholder="123 Main St, Toronto, ON" inputStyle={inputStyle} labelStyle={labelStyle} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-              <SelectField label="Project Type" value={w.type} onChange={v => set('type', v)} options={['Luxury Residential', 'Commercial', 'Healthcare', 'Hospitality']} />
-              <SelectField label="Install Complexity" value={String(w.complexity)} onChange={v => set('complexity', parseFloat(v))} options={[['1.0', 'Standard ×1.0'], ['1.25', 'Moderate ×1.25'], ['1.5', 'Complex ×1.5']]} />
+              <SelectField label="Project Type" value={w.type} onChange={v => set('type', v)} options={['Luxury Residential', 'Commercial', 'Healthcare', 'Hospitality']} inputStyle={inputStyle} labelStyle={labelStyle} c={c} />
+              <SelectField label="Install Complexity" value={String(w.complexity)} onChange={v => set('complexity', parseFloat(v))} options={[['1.0', 'Standard ×1.0'], ['1.25', 'Moderate ×1.25'], ['1.5', 'Complex ×1.5']]} inputStyle={inputStyle} labelStyle={labelStyle} c={c} />
             </div>
-            <TextareaField label="Notes" value={w.notes} onChange={v => set('notes', v)} placeholder="Special requirements…" />
+            <TextareaField label="Notes" value={w.notes} onChange={v => set('notes', v)} placeholder="Special requirements…" inputStyle={inputStyle} labelStyle={labelStyle} />
           </div>
         )}
 
         {/* Step 2 */}
         {w.step === 2 && (
-          <div style={{ background: '#162238', borderRadius: 10, border: '1px solid rgba(201,168,76,0.15)', padding: 24, marginBottom: 16 }}>
-            <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, marginBottom: 18, color: '#c9a84c' }}>Glass Zones</div>
+          <div style={cardStyle}>
+            <div style={{ fontFamily: c.font.heading, fontSize: c.text.md, marginBottom: 18, color: c.accent }}>Glass Zones</div>
             <ZoneBuilder zones={w.zones} onChange={zones => set('zones', zones)} useDimming={w.use_dimming} />
           </div>
         )}
@@ -167,23 +234,23 @@ export default function Estimator() {
         {/* Step 3 */}
         {w.step === 3 && (
           <>
-            <div style={{ background: '#162238', borderRadius: 10, border: '1px solid rgba(201,168,76,0.15)', padding: 24, marginBottom: 16 }}>
-              <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, marginBottom: 18, color: '#c9a84c' }}>Options</div>
-              <Toggle label="Include Electrician" sub="Rough-in + final connect · $977 CAD" checked={w.incl_electrician} onChange={v => set('incl_electrician', v)} />
-              <Toggle label="Dimming Transformer Upsell" sub="Upgrades to premium dimming control · $239/unit" checked={w.use_dimming} onChange={v => set('use_dimming', v)} />
-              <Toggle label="Apply Discount" sub="Applies to film, glass, and installation" checked={w.discount} onChange={v => set('discount', v)} />
+            <div style={cardStyle}>
+              <div style={{ fontFamily: c.font.heading, fontSize: c.text.md, marginBottom: 18, color: c.accent }}>Options</div>
+              <Toggle label="Include Electrician" sub="Rough-in + final connect · $977 CAD" checked={w.incl_electrician} onChange={v => set('incl_electrician', v)} c={c} />
+              <Toggle label="Dimming Transformer Upsell" sub="Upgrades to premium dimming control · $239/unit" checked={w.use_dimming} onChange={v => set('use_dimming', v)} c={c} />
+              <Toggle label="Apply Discount" sub="Applies to film, glass, and installation" checked={w.discount} onChange={v => set('discount', v)} c={c} />
               {w.discount && (
                 <div style={{ marginTop: 8, maxWidth: 200 }}>
-                  <Field label="Discount %" value={String(w.discount_pct)} onChange={v => set('discount_pct', parseFloat(v) || 0)} type="number" />
+                  <Field label="Discount %" value={String(w.discount_pct)} onChange={v => set('discount_pct', parseFloat(v) || 0)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
                 </div>
               )}
             </div>
-            <div style={{ background: '#162238', borderRadius: 10, border: '1px solid rgba(201,168,76,0.15)', padding: 24, marginBottom: 16 }}>
-              <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, marginBottom: 18, color: '#c9a84c' }}>Pricing</div>
+            <div style={cardStyle}>
+              <div style={{ fontFamily: c.font.heading, fontSize: c.text.md, marginBottom: 18, color: c.accent }}>Pricing</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <Field label="Film sell price / sqm (CAD)" value={String(w.film_price)} onChange={v => set('film_price', parseFloat(v) || 700)} type="number" />
-                <Field label="Glass sell price / sqm (CAD)" value={String(w.glass_price)} onChange={v => set('glass_price', parseFloat(v) || 1050)} type="number" />
-                <Field label="Install rate / sqm (CAD)" value={String(w.install_rate)} onChange={v => set('install_rate', parseFloat(v) || 40)} type="number" />
+                <Field label="Film sell price / sqm (CAD)" value={String(w.film_price)} onChange={v => set('film_price', parseFloat(v) || 700)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
+                <Field label="Glass sell price / sqm (CAD)" value={String(w.glass_price)} onChange={v => set('glass_price', parseFloat(v) || 1050)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
+                <Field label="Install rate / sqm (CAD)" value={String(w.install_rate)} onChange={v => set('install_rate', parseFloat(v) || 40)} type="number" inputStyle={inputStyle} labelStyle={labelStyle} />
               </div>
             </div>
           </>
@@ -207,8 +274,14 @@ export default function Estimator() {
           </div>
         </div>
         {savedEstimate && (
-          <div style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.35)', borderRadius: 8, padding: '12px 16px', marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ color: '#c9a84c', fontWeight: 500, fontSize: 13.5 }}>✓ Estimate saved successfully</span>
+          <div style={{
+            background: c.accentSoft,
+            border: '1px solid ' + c.accent,
+            borderRadius: c.radius.md,
+            padding: '12px 16px', marginTop: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span style={{ color: c.accent, fontWeight: c.weight.body, fontSize: c.text.base }}>✓ Estimate saved successfully</span>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => navigate('/estimates')} style={ghostBtn}>View All Estimates</button>
               <button onClick={() => setShowPdf(true)} style={goldBtn}>📄 Generate PDF</button>
@@ -227,49 +300,58 @@ export default function Estimator() {
 }
 
 // ─── Reusable form fields ────────────────────────────────────
-const inputStyle = { width: '100%', padding: '9px 12px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 7, fontFamily: "'DM Sans',sans-serif", fontSize: 13.5, color: '#f4f1eb', background: 'rgba(255,255,255,0.07)', outline: 'none', boxSizing: 'border-box' }
-const goldBtn = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#c9a84c', color: '#1c2b4a', border: 'none', borderRadius: 7, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }
-const navyBtn = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: '#1c2b4a', color: '#f4f1eb', border: 'none', borderRadius: 7, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }
-const ghostBtn = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 18px', background: 'transparent', color: 'rgba(244,241,235,0.7)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 7, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }
-
-function Field({ label, value, onChange, placeholder, type = 'text' }) {
+function Field({ label, value, onChange, placeholder, type = 'text', inputStyle, labelStyle }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11, fontWeight: 700, color: '#c9a84c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, display: 'block' }}>{label}</label>
+      <label style={labelStyle}>{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={inputStyle} />
     </div>
   )
 }
 
-function SelectField({ label, value, onChange, options }) {
+function SelectField({ label, value, onChange, options, inputStyle, labelStyle }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11, fontWeight: 700, color: '#c9a84c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, display: 'block' }}>{label}</label>
-      <select value={value} onChange={e => onChange(e.target.value)} style={{ ...inputStyle, appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center', paddingRight: 30 }}>
+      <label style={labelStyle}>{label}</label>
+      <select value={value} onChange={e => onChange(e.target.value)} style={{
+        ...inputStyle,
+        appearance: 'none',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b5cf6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 10px center',
+        paddingRight: 30,
+      }}>
         {options.map(o => Array.isArray(o) ? <option key={o[0]} value={o[0]}>{o[1]}</option> : <option key={o} value={o}>{o}</option>)}
       </select>
     </div>
   )
 }
 
-function TextareaField({ label, value, onChange, placeholder }) {
+function TextareaField({ label, value, onChange, placeholder, inputStyle, labelStyle }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-      <label style={{ fontSize: 11, fontWeight: 700, color: '#c9a84c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 5, display: 'block' }}>{label}</label>
+      <label style={labelStyle}>{label}</label>
       <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ ...inputStyle, resize: 'vertical', minHeight: 70 }} />
     </div>
   )
 }
 
-function Toggle({ label, sub, checked, onChange }) {
+function Toggle({ label, sub, checked, onChange, c }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, marginBottom: 8 }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '11px 14px',
+      background: c.surfaceHover,
+      border: '1px solid ' + c.border,
+      borderRadius: c.radius.md,
+      marginBottom: 8,
+    }}>
       <div>
-        <div style={{ fontSize: 13.5, fontWeight: 500, color: '#f4f1eb' }}>{label}</div>
-        {sub && <div style={{ fontSize: 11.5, color: 'rgba(244,241,235,0.45)', marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontSize: c.text.base, fontWeight: c.weight.body, color: c.textPrimary }}>{label}</div>
+        {sub && <div style={{ fontSize: c.text.sm, color: c.textMuted, marginTop: 2 }}>{sub}</div>}
       </div>
       <div onClick={() => onChange(!checked)} style={{ position: 'relative', width: 40, height: 22, cursor: 'pointer', flexShrink: 0 }}>
-        <div style={{ position: 'absolute', inset: 0, borderRadius: 20, background: checked ? '#c9a84c' : 'rgba(255,255,255,0.2)', transition: 'background 0.2s' }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: 20, background: checked ? c.accent : c.border, transition: 'background 0.2s' }} />
         <div style={{ position: 'absolute', width: 16, height: 16, borderRadius: '50%', background: '#fff', top: 3, left: checked ? 21 : 3, transition: 'left 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
       </div>
     </div>

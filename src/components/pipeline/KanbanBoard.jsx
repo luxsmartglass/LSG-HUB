@@ -3,6 +3,9 @@ import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import { supabase } from '../../lib/supabase';
 import { PIPELINE_STAGES } from '../../lib/pricingDatabase';
 import { useToast } from '../ui/Toast';
+import { useTheme } from '../../theme/useTheme';
+import { Modal } from '../ui/Modal';
+import EmptyState from '../ui/EmptyState';
 import DealCard from './DealCard';
 import WarmHoldColumn from './WarmHoldColumn';
 
@@ -12,7 +15,7 @@ function formatColValue(deals) {
   return '$' + total.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
-function RegularColumn({ stage, deals, onRefresh }) {
+function RegularColumn({ stage, deals, onRefresh, onDelete, c }) {
   return (
     <div style={{
       width: 240,
@@ -20,23 +23,23 @@ function RegularColumn({ stage, deals, onRefresh }) {
       maxWidth: 240,
       display: 'flex',
       flexDirection: 'column',
-      borderRadius: 10,
+      borderRadius: c.radius.lg,
       overflow: 'hidden',
-      border: '1px solid rgba(255,255,255,0.07)',
+      border: '1px solid ' + c.border,
       flexShrink: 0,
     }}>
-      {/* Column header */}
+      {/* Column header — stage.color stays (semantic per-stage color) */}
       <div style={{
-        background: '#1c2b4a',
+        background: c.surfaceElevated,
         borderTop: `4px solid ${stage.color}`,
         padding: '10px 12px 10px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
           <span style={{
-            fontWeight: 700,
-            fontSize: 12.5,
-            color: '#f4f1eb',
-            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: c.weight.strong,
+            fontSize: c.text.sm,
+            color: c.textPrimary,
+            fontFamily: c.font.body,
             flex: 1,
             lineHeight: 1.3,
           }}>
@@ -45,22 +48,17 @@ function RegularColumn({ stage, deals, onRefresh }) {
           <span style={{
             background: stage.color + '33',
             color: stage.color,
-            borderRadius: 999,
+            borderRadius: c.radius.pill,
             padding: '1px 8px',
-            fontSize: 11.5,
-            fontWeight: 700,
-            fontFamily: "'DM Sans', sans-serif",
+            fontSize: c.text.sm,
+            fontWeight: c.weight.button,
             flexShrink: 0,
           }}>
             {deals.length}
           </span>
         </div>
         {formatColValue(deals) && (
-          <div style={{
-            fontSize: 11,
-            color: 'rgba(244,241,235,0.55)',
-            fontFamily: "'DM Sans', sans-serif",
-          }}>
+          <div style={{ fontSize: c.text.xs, color: c.textMuted }}>
             {formatColValue(deals)} CAD
           </div>
         )}
@@ -78,7 +76,7 @@ function RegularColumn({ stage, deals, onRefresh }) {
               padding: '10px 10px 4px',
               background: snapshot.isDraggingOver
                 ? stage.bg
-                : 'rgba(255,255,255,0.03)',
+                : c.bg,
               transition: 'background 0.15s',
               overflowY: 'auto',
               maxHeight: 520,
@@ -87,16 +85,15 @@ function RegularColumn({ stage, deals, onRefresh }) {
             {deals.length === 0 && !snapshot.isDraggingOver && (
               <div style={{
                 textAlign: 'center',
-                color: 'rgba(255,255,255,0.2)',
-                fontSize: 12,
+                color: c.textMuted,
+                fontSize: c.text.sm,
                 padding: '18px 0',
-                fontFamily: "'DM Sans', sans-serif",
               }}>
                 No deals
               </div>
             )}
             {deals.map((deal, i) => (
-              <DealCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} />
+              <DealCard key={deal.id} deal={deal} index={i} onRefresh={onRefresh} onDelete={onDelete} />
             ))}
             {provided.placeholder}
           </div>
@@ -106,74 +103,101 @@ function RegularColumn({ stage, deals, onRefresh }) {
   );
 }
 
-// Loss reason modal
-function LossReasonModal({ onConfirm, onCancel }) {
+// Loss reason modal — reuses Modal primitive
+function LossReasonModal({ open, onConfirm, onCancel }) {
+  const { c } = useTheme();
   const [reason, setReason] = useState('');
+
+  function handleConfirm() {
+    onConfirm(reason);
+    setReason('');
+  }
+
+  function handleCancel() {
+    setReason('');
+    onCancel();
+  }
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-      zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        background: '#162238', borderRadius: 12, padding: '28px 28px 24px',
-        width: 380, maxWidth: '90vw',
-        boxShadow: '0 16px 64px rgba(0,0,0,0.6)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        fontFamily: "'DM Sans', sans-serif",
-      }}>
-        <div style={{ fontWeight: 700, fontSize: 16, color: '#f4f1eb', marginBottom: 6 }}>
-          Mark as Lost
-        </div>
-        <div style={{ fontSize: 13, color: 'rgba(244,241,235,0.5)', marginBottom: 14 }}>
-          What was the reason for losing this deal?
-        </div>
-        <textarea
-          value={reason}
-          onChange={e => setReason(e.target.value)}
-          autoFocus
-          placeholder="e.g. Budget constraints, chose competitor..."
-          rows={3}
-          style={{
-            width: '100%', boxSizing: 'border-box',
-            padding: '10px 12px', fontSize: 13,
-            border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: 7,
-            outline: 'none', resize: 'vertical',
-            color: '#f4f1eb', background: 'rgba(255,255,255,0.07)',
-            fontFamily: "'DM Sans', sans-serif",
-            marginBottom: 16,
-          }}
-        />
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+    <Modal
+      open={open}
+      onClose={handleCancel}
+      title="Mark as Lost"
+      size="sm"
+      footer={
+        <>
           <button
-            onClick={onCancel}
+            onClick={handleCancel}
             style={{
-              padding: '8px 18px', fontSize: 13, borderRadius: 7,
-              border: '1px solid rgba(255,255,255,0.15)', background: 'transparent',
-              color: 'rgba(244,241,235,0.6)', cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              padding: '8px 18px', fontSize: c.text.base, borderRadius: c.radius.md,
+              border: '1px solid ' + c.border, background: 'transparent',
+              color: c.textSecondary, cursor: 'pointer', fontFamily: c.font.body,
             }}
           >
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(reason)}
+            onClick={handleConfirm}
             style={{
-              padding: '8px 18px', fontSize: 13, fontWeight: 600, borderRadius: 7,
-              border: 'none', background: '#dc2626', color: '#fff',
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              padding: '8px 18px', fontSize: c.text.base, fontWeight: c.weight.button,
+              borderRadius: c.radius.md, border: 'none',
+              background: c.danger, color: '#fff',
+              cursor: 'pointer', fontFamily: c.font.body,
             }}
           >
             Mark Lost
           </button>
-        </div>
+        </>
+      }
+    >
+      <div style={{ fontSize: c.text.base, color: c.textMuted, marginBottom: 14 }}>
+        What was the reason for losing this deal?
       </div>
-    </div>
+      <textarea
+        value={reason}
+        onChange={e => setReason(e.target.value)}
+        autoFocus
+        placeholder="e.g. Budget constraints, chose competitor..."
+        rows={3}
+        style={{
+          width: '100%', boxSizing: 'border-box',
+          padding: '10px 12px', fontSize: c.text.base,
+          border: '1px solid ' + c.border, borderRadius: c.radius.md,
+          outline: 'none', resize: 'vertical',
+          color: c.textPrimary, background: c.surfaceHover,
+          fontFamily: c.font.body,
+        }}
+      />
+    </Modal>
   );
 }
 
 export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWarmContact }) {
   const addToast = useToast();
+  const { c } = useTheme();
   const [lossModal, setLossModal] = useState(null); // { dealId, destStageId }
+  function handleDeleteDeal(deal) {
+    // deals state lives in Pipeline.jsx; we only have onRefresh here.
+    // Use the re-insert Undo variant: delete immediately, toast with Undo that re-inserts the saved record.
+    supabase.from('pipeline').delete().eq('id', deal.id).then(({ error }) => {
+      if (error) {
+        addToast('Failed to delete deal: ' + error.message, 'error');
+      } else {
+        if (onRefresh) onRefresh();
+      }
+    });
+    addToast('Deal deleted', 'success', {
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          const { error } = await supabase.from('pipeline').insert(deal).select();
+          if (error) addToast('Could not restore deal: ' + error.message, 'error');
+          else if (onRefresh) onRefresh();
+        },
+      },
+      duration: 6000,
+    });
+  }
 
   // Group deals by stage
   function dealsByStage(stageId) {
@@ -205,7 +229,7 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
           particleCount: 120,
           spread: 80,
           origin: { y: 0.6 },
-          colors: ['#c9a84c', '#1c2b4a', '#f4f1eb', '#16a34a'],
+          colors: [c.accent, c.highlight, c.textPrimary, c.success],
         });
       }).catch(() => {
         // canvas-confetti not available, silently skip
@@ -252,49 +276,65 @@ export default function KanbanBoard({ deals = [], onRefresh, onAddDeal, onAddWar
     if (onRefresh) onRefresh(); // refresh to revert optimistic UI
   }
 
+  const totalDeals = deals.length;
+
   return (
     <>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 16,
-          overflowX: 'auto',
-          padding: '8px 4px 16px',
-          alignItems: 'flex-start',
-          minHeight: 300,
-        }}>
-          {PIPELINE_STAGES.map(stage => {
-            const stageDeals = dealsByStage(stage.id);
-            if (stage.id === 'warm_hold') {
+      {totalDeals === 0 ? (
+        <div style={{ background: c.surface, borderRadius: c.radius.lg, border: '1px solid ' + c.border, marginTop: 8 }}>
+          <EmptyState
+            illustration="EmptyPipeline"
+            title="No deals yet"
+            message="Add your first deal."
+            action="Add Deal"
+            onAction={onAddDeal}
+          />
+        </div>
+      ) : (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 16,
+            overflowX: 'auto',
+            padding: '8px 4px 16px',
+            alignItems: 'flex-start',
+            minHeight: 300,
+          }}>
+            {PIPELINE_STAGES.map(stage => {
+              const stageDeals = dealsByStage(stage.id);
+              if (stage.id === 'warm_hold') {
+                return (
+                  <WarmHoldColumn
+                    key={stage.id}
+                    stage={stage}
+                    deals={stageDeals}
+                    onRefresh={onRefresh}
+                    onDelete={handleDeleteDeal}
+                    onAddContact={() => onAddWarmContact && onAddWarmContact()}
+                  />
+                );
+              }
               return (
-                <WarmHoldColumn
+                <RegularColumn
                   key={stage.id}
                   stage={stage}
                   deals={stageDeals}
                   onRefresh={onRefresh}
-                  onAddContact={() => onAddWarmContact && onAddWarmContact()}
+                  onDelete={handleDeleteDeal}
+                  c={c}
                 />
               );
-            }
-            return (
-              <RegularColumn
-                key={stage.id}
-                stage={stage}
-                deals={stageDeals}
-                onRefresh={onRefresh}
-              />
-            );
-          })}
-        </div>
-      </DragDropContext>
-
-      {lossModal && (
-        <LossReasonModal
-          onConfirm={handleLossConfirm}
-          onCancel={handleLossCancel}
-        />
+            })}
+          </div>
+        </DragDropContext>
       )}
+
+      <LossReasonModal
+        open={!!lossModal}
+        onConfirm={handleLossConfirm}
+        onCancel={handleLossCancel}
+      />
     </>
   );
 }

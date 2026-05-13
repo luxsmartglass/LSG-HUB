@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from 'react'
+import { useTheme } from '../theme/useTheme'
 
 export default function Splash({ onComplete }) {
+  const { c } = useTheme()
   const [tapped, setTapped] = useState(false)
   const [irisOpen, setIrisOpen] = useState(false)
   const [done, setDone] = useState(false)
@@ -130,13 +132,13 @@ export default function Splash({ onComplete }) {
           {/* LSG wordmark */}
           <div
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: c.font.heading,
               fontSize: 'clamp(52px, 10vw, 88px)',
-              fontWeight: 700,
-              color: '#c9a84c',
+              fontWeight: c.weight.hero,
+              color: c.accent,
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
-              textShadow: '0 0 60px rgba(201,168,76,0.35), 0 2px 30px rgba(0,0,0,0.7)',
+              textShadow: `0 0 60px ${c.accent}5a, 0 2px 30px rgba(0,0,0,0.7)`,
               animation: 'textFadeUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s both',
             }}
           >
@@ -147,7 +149,7 @@ export default function Splash({ onComplete }) {
           <div
             style={{
               height: 1,
-              background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)',
+              background: `linear-gradient(90deg, transparent, ${c.accent}, transparent)`,
               animation: 'lineDraw 0.7s ease-out 0.8s both',
               alignSelf: 'center',
             }}
@@ -156,10 +158,10 @@ export default function Splash({ onComplete }) {
           {/* Full name */}
           <div
             style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: c.font.body,
               fontSize: 'clamp(10px, 1.8vw, 14px)',
               fontWeight: 400,
-              color: 'rgba(255,255,255,0.8)',
+              color: `${c.textPrimary}cc`,
               letterSpacing: '0.35em',
               textTransform: 'uppercase',
               textShadow: '0 1px 20px rgba(0,0,0,0.9)',
@@ -172,10 +174,10 @@ export default function Splash({ onComplete }) {
           {/* Tagline */}
           <div
             style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: c.font.body,
               fontSize: 'clamp(9px, 1.2vw, 11px)',
-              fontWeight: 300,
-              color: 'rgba(201,168,76,0.55)',
+              fontWeight: 500,
+              color: `${c.accent}8c`,
               letterSpacing: '0.28em',
               textTransform: 'uppercase',
               marginTop: 4,
@@ -193,7 +195,7 @@ export default function Splash({ onComplete }) {
           position: 'fixed',
           inset: 0,
           zIndex: 12,
-          background: '#0f1d35',
+          background: c.bg,
           clipPath: irisOpen ? 'circle(150% at 50% 50%)' : 'circle(0% at 50% 50%)',
           transition: irisOpen ? 'clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
           pointerEvents: 'none',
@@ -211,7 +213,7 @@ export default function Splash({ onComplete }) {
             position: 'fixed',
             inset: 0,
             zIndex: 20,
-            background: '#0f1d35',
+            background: c.bg,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -222,10 +224,10 @@ export default function Splash({ onComplete }) {
         >
           <div
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: c.font.heading,
               fontSize: 'clamp(32px, 6vw, 52px)',
-              fontWeight: 700,
-              color: '#c9a84c',
+              fontWeight: c.weight.hero,
+              color: c.accent,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
             }}
@@ -234,10 +236,10 @@ export default function Splash({ onComplete }) {
           </div>
           <div
             style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: c.font.body,
               fontSize: 'clamp(9px, 1.4vw, 12px)',
-              fontWeight: 300,
-              color: 'rgba(255,255,255,0.4)',
+              fontWeight: 500,
+              color: c.textMuted,
               letterSpacing: '0.3em',
               textTransform: 'uppercase',
               marginTop: -12,
@@ -247,10 +249,10 @@ export default function Splash({ onComplete }) {
           </div>
           <span
             style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: c.font.body,
               fontSize: 'clamp(10px, 1.6vw, 13px)',
               fontWeight: 400,
-              color: 'rgba(201,168,76,0.7)',
+              color: `${c.accent}b3`,
               letterSpacing: '0.25em',
               textTransform: 'uppercase',
               animation: 'tapPulse 2s ease-in-out infinite',

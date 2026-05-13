@@ -1,9 +1,15 @@
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTheme } from '../../theme/useTheme'
+import { SunIcon, MoonIcon, MonitorIcon, PlusIcon } from '../ui/icons'
+import { IconButton } from '../ui/IconButton'
+import { Button } from '../ui/Button'
 
 const TITLES = {
   '/': 'Home',
   '/pipeline': 'Pipeline',
   '/estimator': 'New Estimate',
+  '/estimates': 'All Estimates',
   '/contacts': 'Contacts',
   '/invoices': 'Invoices',
   '/products': 'Product Catalog',
@@ -13,34 +19,74 @@ const TITLES = {
 export default function Topbar({ session }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { c, mode, pref, cycleMode } = useTheme()
   const title = TITLES[location.pathname] || 'LSG Hub'
   const isEstimator = location.pathname.startsWith('/estimator')
 
+  // Subtle icon rotation on each cycle click
+  const [rotated, setRotated] = useState(false)
+
+  function handleThemeClick() {
+    cycleMode()
+    setRotated(r => !r)
+  }
+
+  const themeIcon = mode === 'light'
+    ? <SunIcon size={16} />
+    : pref === 'system'
+      ? <MonitorIcon size={16} />
+      : <MoonIcon size={16} />
+
+  const themeLabel = `Theme: ${pref} (click to cycle)`
+
+  function openCommandPalette() {
+    window.dispatchEvent(new Event('lsg:open-command-palette'))
+  }
+
   return (
     <div style={{
-      height:56, minHeight:56, background:'#1c2b4a',
-      borderBottom:'1px solid rgba(255,255,255,0.08)',
+      height:56, minHeight:56, background:c.surface,
+      borderBottom:'1px solid '+c.border,
       display:'flex', alignItems:'center', justifyContent:'space-between',
-      padding:'0 28px', boxShadow:'0 1px 8px rgba(0,0,0,0.3)'
+      padding:'0 28px', boxShadow:c.shadowSm,
+      transition:'background-color 0.25s ease, border-color 0.25s ease',
     }}>
-      <div style={{ fontFamily:"'Playfair Display',serif", fontSize:19, fontWeight:600, color:'#f4f1eb' }}>{title}</div>
-      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <span id="sync-indicator" style={{ fontSize:12, color:'#9ca3af', transition:'color 0.2s' }} />
+      <div style={{ fontFamily:c.font.heading, fontSize:19, fontWeight:c.weight.strong, color:c.textPrimary }}>{title}</div>
+      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <span id="sync-indicator" style={{ fontSize:12, color:c.textMuted, transition:'color 0.2s' }} />
+
+        {/* Quick create "+" — opens ⌘K command palette */}
+        <IconButton
+          variant="ghost"
+          label="Quick create (⌘K)"
+          onClick={openCommandPalette}
+        >
+          <PlusIcon size={16} />
+        </IconButton>
+
+        {/* Theme toggle: Sun (light) / Monitor (system) / Moon (dark) — cycles light→dark→system */}
+        <IconButton
+          variant="ghost"
+          label={themeLabel}
+          onClick={handleThemeClick}
+          style={{
+            // 180° rotate on each click; respects reduced-motion globally via CSS
+            transform: rotated ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'background-color .15s, color .15s, transform 0.3s',
+          }}
+        >
+          {themeIcon}
+        </IconButton>
+
         {!isEstimator && (
-          <button
+          <Button
+            variant="primary"
+            size="md"
+            icon={<PlusIcon size={14} />}
             onClick={() => navigate('/estimator')}
-            style={{
-              display:'flex', alignItems:'center', gap:6, padding:'9px 18px',
-              background:'#c9a84c', color:'#1c2b4a', border:'none', borderRadius:7,
-              fontSize:13.5, fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif",
-              transition:'background 0.15s'
-            }}
-            onMouseEnter={e=>e.currentTarget.style.background='#a8883c'}
-            onMouseLeave={e=>e.currentTarget.style.background='#c9a84c'}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             New Estimate
-          </button>
+          </Button>
         )}
       </div>
     </div>
