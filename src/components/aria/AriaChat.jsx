@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 const GREETING = "👋 Hi! I'm ARIA — your AI Revenue Intelligence Assistant for Lux Smart Glass. I can help you analyze your pipeline, forecast revenue, and surface opportunities. What would you like to know?"
 
@@ -34,9 +35,9 @@ function TypingDots({ c }) {
   )
 }
 
-function AriaBubble({ text, isTyping, c }) {
+function AriaBubble({ text, isTyping, c, isMobile }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, maxWidth: '72%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, maxWidth: isMobile ? '88%' : '72%' }}>
       <span style={{
         color: c.accent,
         fontSize: c.text.xs,
@@ -61,7 +62,7 @@ function AriaBubble({ text, isTyping, c }) {
   )
 }
 
-function UserBubble({ text, c }) {
+function UserBubble({ text, c, isMobile }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <div style={{
@@ -72,7 +73,8 @@ function UserBubble({ text, c }) {
         fontSize: c.text.sm,
         fontWeight: c.weight.body,
         lineHeight: c.leading.normal,
-        maxWidth: '72%',
+        maxWidth: isMobile ? '88%' : '72%',
+        wordBreak: 'break-word',
       }}>
         {text}
       </div>
@@ -82,6 +84,7 @@ function UserBubble({ text, c }) {
 
 export default function AriaChat() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const [messages, setMessages] = useState([
     { id: 0, role: 'aria', text: GREETING },
   ])
@@ -144,11 +147,11 @@ export default function AriaChat() {
       }}>
         {messages.map(msg =>
           msg.role === 'user'
-            ? <UserBubble key={msg.id} text={msg.text} c={c} />
-            : <AriaBubble key={msg.id} text={msg.text} c={c} />
+            ? <UserBubble key={msg.id} text={msg.text} c={c} isMobile={isMobile} />
+            : <AriaBubble key={msg.id} text={msg.text} c={c} isMobile={isMobile} />
         )}
         {thinking && (
-          <AriaBubble isTyping c={c} />
+          <AriaBubble isTyping c={c} isMobile={isMobile} />
         )}
         <div ref={bottomRef} />
       </div>
@@ -156,7 +159,7 @@ export default function AriaChat() {
       {/* Input bar */}
       <div style={{
         borderTop: `1px solid ${c.border}`,
-        padding: '14px 16px',
+        padding: isMobile ? '12px 12px' : '14px 16px',
         display: 'flex',
         gap: 10,
         alignItems: 'center',
@@ -178,19 +181,20 @@ export default function AriaChat() {
             borderRadius: c.radius.md,
             color: c.textPrimary,
             fontSize: c.text.sm,
-            padding: '10px 14px',
+            padding: isMobile ? '12px 14px' : '10px 14px',
             outline: 'none',
             fontFamily: c.font.body,
             transition: 'border-color 0.15s',
             opacity: thinking ? 0.6 : 1,
+            minWidth: 0,
           }}
         />
         <button
           onClick={handleSend}
           disabled={!input.trim() || thinking}
           style={{
-            width: 40,
-            height: 40,
+            width: isMobile ? 44 : 40,
+            height: isMobile ? 44 : 40,
             borderRadius: c.radius.md,
             border: 'none',
             background: input.trim() && !thinking ? c.accent : c.surfaceHover,

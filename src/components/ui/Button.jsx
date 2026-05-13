@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTheme } from '../../theme/useTheme'
+import { useReducedMotion } from '../../lib/motion'
 
 function SpinRing({ trackColor }) {
   return (
@@ -30,7 +31,14 @@ export function Button({
   ...rest
 }) {
   const { c } = useTheme()
+  const reduced = useReducedMotion()
   const [pressed, setPressed] = useState(false)
+  const [glowing, setGlowing] = useState(false)
+  const glowTimerRef = useRef(null)
+
+  useEffect(() => {
+    return () => { if (glowTimerRef.current) clearTimeout(glowTimerRef.current) }
+  }, [])
 
   const isDisabled = disabled || loading
 
@@ -83,6 +91,7 @@ export function Button({
     transition: 'background-color .15s, transform .08s, box-shadow .15s',
     opacity: isDisabled ? 0.6 : 1,
     transform: pressed && !isDisabled ? 'scale(0.97)' : 'scale(1)',
+    boxShadow: glowing && !isDisabled ? '0 0 0 4px ' + c.accentSoft : undefined,
     width: fullWidth ? '100%' : undefined,
     textDecoration: 'none',
     lineHeight: 1,
@@ -92,7 +101,14 @@ export function Button({
   }
 
   function handleMouseDown(e) {
-    if (!isDisabled) setPressed(true)
+    if (!isDisabled) {
+      setPressed(true)
+      if (!reduced) {
+        setGlowing(true)
+        if (glowTimerRef.current) clearTimeout(glowTimerRef.current)
+        glowTimerRef.current = setTimeout(() => setGlowing(false), 250)
+      }
+    }
     rest.onMouseDown?.(e)
   }
   function handleMouseUp(e) {

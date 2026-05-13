@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '../../../theme/useTheme'
+import { useIsMobile } from '../../../hooks/useMediaQuery'
 import { CheckIcon, XIcon } from '../../ui/icons'
 import { Badge } from '../../ui/Badge'
 import { IconButton } from '../../ui/IconButton'
@@ -15,6 +16,7 @@ export function TaskRow({
   showDue = false,
 }) {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const [editing, setEditing] = useState(false)
   const [editVal, setEditVal] = useState(task.title)
   const [hovered, setHovered] = useState(false)
@@ -51,7 +53,7 @@ export function TaskRow({
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    padding: '10px 12px',
+    padding: isMobile ? '12px 12px' : '10px 12px',
     borderRadius: c.radius.md,
     borderLeft: '3px solid ' + urgencyColor,
     background: hovered ? c.surfaceHover : 'transparent',
@@ -62,8 +64,8 @@ export function TaskRow({
   }
 
   const checkboxStyle = {
-    width: 18,
-    height: 18,
+    width: isMobile ? 22 : 18,
+    height: isMobile ? 22 : 18,
     borderRadius: c.radius.sm,
     border: '2px solid ' + (task.completed ? c.accent : c.border),
     background: task.completed ? c.accent : 'transparent',
@@ -173,8 +175,8 @@ export function TaskRow({
           />
         )}
 
-        {/* Delete button (hover-revealed) */}
-        <div style={{ opacity: hovered ? 1 : 0, transition: 'opacity .15s' }}>
+        {/* Delete button (hover-revealed on desktop; always visible at reduced opacity on mobile) */}
+        <div style={{ opacity: isMobile ? 0.55 : hovered ? 1 : 0, transition: 'opacity .15s' }}>
           <IconButton
             variant="subtle"
             label="Delete task"

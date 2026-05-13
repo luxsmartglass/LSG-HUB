@@ -1,5 +1,10 @@
 import { useState, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../../theme/useTheme'
+import { useIsNarrow } from '../../hooks/useMediaQuery'
+import { useReducedMotion, listItem, spring } from '../../lib/motion'
+import { Card } from '../ui/Card'
+import { IconButton } from '../ui/IconButton'
 import EmptyState from '../ui/EmptyState'
 
 const SOURCE_COLORS = {
@@ -45,8 +50,24 @@ const COLUMNS = [
   { key: 'actions', label: '',        sortable: false },
 ]
 
+const SORT_OPTIONS = [
+  { value: 'name',       label: 'Name' },
+  { value: 'company',    label: 'Company' },
+  { value: 'created_at', label: 'Newest' },
+]
+
+function parseTags(contact) {
+  return Array.isArray(contact.tags)
+    ? contact.tags
+    : typeof contact.tags === 'string' && contact.tags
+      ? contact.tags.split(',').map(t => t.trim()).filter(Boolean)
+      : []
+}
+
 export default function ContactTable({ contacts, onSelect, onDelete, searchTerm }) {
   const { c } = useTheme()
+  const isNarrow = useIsNarrow()
+  const reducedMotion = useReducedMotion()
   const [sortKey, setSortKey] = useState('created_at')
   const [sortDir, setSortDir] = useState('desc')
   const [hoveredRow, setHoveredRow] = useState(null)
@@ -98,8 +119,133 @@ export default function ContactTable({ contacts, onSelect, onDelete, searchTerm 
     )
   }
 
+  // ── Card view (narrow / touch) ──────────────────────────────────────────
+  if (isNarrow) {
+    const cardListContent = sorted.map(contact => {
+      const tags = parseTags(contact)
+
+      if (reducedMotion) {
+        return (
+          <div key={contact.id}>
+            <ContactCard
+              contact={contact}
+              tags={tags}
+              c={c}
+              onSelect={onSelect}
+              onDelete={onDelete}
+            />
+          </div>
+        )
+      }
+
+      return (
+        <motion.div
+          key={contact.id}
+          layout
+          initial={listItem.initial}
+          animate={listItem.animate}
+          exit={listItem.exit}
+          transition={spring}
+          style={{ overflow: 'hidden' }}
+        >
+          <ContactCard
+            contact={contact}
+            tags={tags}
+            c={c}
+            onSelect={onSelect}
+            onDelete={onDelete}
+          />
+        </motion.div>
+      )
+    })
+
+    return (
+      <div>
+        {/* Sort select */}
+        <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: c.text.sm, color: c.textMuted }}>Sort by</span>
+          <select
+            value={sortKey}
+            onChange={e => {
+              setSortKey(e.target.value)
+              setSortDir(e.target.value === 'created_at' ? 'desc' : 'asc')
+            }}
+            style={{
+              background: c.surface, border: `1px solid ${c.border}`,
+              color: c.textPrimary, borderRadius: c.radius.sm,
+              padding: '5px 10px', fontSize: c.text.sm, cursor: 'pointer',
+            }}
+          >
+            {SORT_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Card list */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {reducedMotion ? (
+            cardListContent
+          ) : (
+            <AnimatePresence initial={false}>
+              {cardListContent}
+            </AnimatePresence>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Table view (desktop / wide) ─────────────────────────────────────────
+  const tableRows = sorted.map(contact => {
+    const isHovered = hoveredRow === contact.id
+    const tags = parseTags(contact)
+
+    if (reducedMotion) {
+      return (
+        <tr
+          key={contact.id}
+          onMouseEnter={() => setHoveredRow(contact.id)}
+          onMouseLeave={() => setHoveredRow(null)}
+          onClick={() => onSelect(contact)}
+          style={{
+            borderBottom: `1px solid ${c.border}`,
+            cursor: 'pointer',
+            background: isHovered ? c.surfaceHover : 'transparent',
+            borderLeft: isHovered ? `3px solid ${c.accent}` : '3px solid transparent',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <TableRowCells contact={contact} tags={tags} c={c} onDelete={onDelete} />
+        </tr>
+      )
+    }
+
+    return (
+      <motion.tr
+        key={contact.id}
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={spring}
+        onMouseEnter={() => setHoveredRow(contact.id)}
+        onMouseLeave={() => setHoveredRow(null)}
+        onClick={() => onSelect(contact)}
+        style={{
+          borderBottom: `1px solid ${c.border}`,
+          cursor: 'pointer',
+          background: isHovered ? c.surfaceHover : 'transparent',
+          borderLeft: isHovered ? `3px solid ${c.accent}` : '3px solid transparent',
+          transition: 'background-color 0.15s ease, border-left-color 0.15s ease',
+        }}
+      >
+        <TableRowCells contact={contact} tags={tags} c={c} onDelete={onDelete} />
+      </motion.tr>
+    )
+  })
+
   return (
-    <div style={{ overflowX: 'auto' }}>
+    <div className="h-scroll">
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: c.text.base }}>
         <thead>
           <tr style={{ borderBottom: `2px solid ${c.border}` }}>
@@ -121,73 +267,122 @@ export default function ContactTable({ contacts, onSelect, onDelete, searchTerm 
           </tr>
         </thead>
         <tbody>
-          {sorted.map(contact => {
-            const isHovered = hoveredRow === contact.id
-            const tags = Array.isArray(contact.tags)
-              ? contact.tags
-              : typeof contact.tags === 'string' && contact.tags
-                ? contact.tags.split(',').map(t => t.trim()).filter(Boolean)
-                : []
-
-            return (
-              <tr
-                key={contact.id}
-                onMouseEnter={() => setHoveredRow(contact.id)}
-                onMouseLeave={() => setHoveredRow(null)}
-                onClick={() => onSelect(contact)}
-                style={{
-                  borderBottom: `1px solid ${c.border}`,
-                  cursor: 'pointer',
-                  background: isHovered ? c.surfaceHover : 'transparent',
-                  borderLeft: isHovered ? `3px solid ${c.accent}` : '3px solid transparent',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <td style={{ padding: '14px 16px' }}>
-                  <div style={{ fontWeight: c.weight.button, color: c.textPrimary }}>
-                    {contact.name || '—'}
-                  </div>
-                </td>
-                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
-                  {contact.company || '—'}
-                </td>
-                <td style={{ padding: '14px 16px', color: c.textMuted }}>
-                  {contact.role || '—'}
-                </td>
-                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
-                  {contact.email || '—'}
-                </td>
-                <td style={{ padding: '14px 16px', color: c.textSecondary }}>
-                  {contact.phone || '—'}
-                </td>
-                <td style={{ padding: '14px 16px' }}>
-                  <SourceBadge source={contact.source} />
-                </td>
-                <td style={{ padding: '14px 16px' }}>
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                    {tags.map((tag, i) => <TagBadge key={i} tag={tag} c={c} />)}
-                  </div>
-                </td>
-                <td style={{ padding: '14px 16px' }} onClick={e => e.stopPropagation()}>
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Delete ${contact.name}?`)) onDelete(contact.id)
-                    }}
-                    style={{
-                      background: c.dangerSoft, border: `1px solid ${c.danger}44`,
-                      color: c.danger, borderRadius: c.radius.sm, padding: '6px 10px',
-                      cursor: 'pointer', fontSize: 14,
-                    }}
-                    title="Delete contact"
-                  >
-                    🗑
-                  </button>
-                </td>
-              </tr>
-            )
-          })}
+          {reducedMotion ? (
+            tableRows
+          ) : (
+            <AnimatePresence initial={false}>
+              {tableRows}
+            </AnimatePresence>
+          )}
         </tbody>
       </table>
     </div>
+  )
+}
+
+// ── Sub-components ──────────────────────────────────────────────────────────
+
+function ContactCard({ contact, tags, c, onSelect, onDelete }) {
+  return (
+    <Card
+      pad={12}
+      hover
+      interactive
+      onClick={() => onSelect(contact)}
+      style={{ cursor: 'pointer' }}
+    >
+      {/* Top row: name + delete */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
+        <span style={{ fontWeight: c.weight.button, color: c.textPrimary, fontSize: c.text.md, lineHeight: 1.3 }}>
+          {contact.name || '—'}
+        </span>
+        <IconButton
+          label="Delete contact"
+          size={32}
+          style={{ opacity: 0.6, flexShrink: 0, marginLeft: 8 }}
+          onClick={e => {
+            e.stopPropagation()
+            if (window.confirm(`Delete ${contact.name}?`)) onDelete(contact.id)
+          }}
+        >
+          🗑
+        </IconButton>
+      </div>
+
+      {/* Label:value rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: tags.length ? 8 : 0 }}>
+        <CardRow label="Company · Role" value={[contact.company, contact.role].filter(Boolean).join(' · ') || '—'} c={c} />
+        <CardRow label="Email" value={contact.email || '—'} c={c} />
+        <CardRow label="Phone" value={contact.phone || '—'} c={c} />
+        {contact.source && (
+          <div style={{ marginTop: 2 }}>
+            <SourceBadge source={contact.source} />
+          </div>
+        )}
+      </div>
+
+      {/* Tag badges */}
+      {tags.length > 0 && (
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {tags.map((tag, i) => <TagBadge key={i} tag={tag} c={c} />)}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function CardRow({ label, value, c }) {
+  return (
+    <div style={{ display: 'flex', gap: 6, fontSize: c.text.sm, lineHeight: 1.4 }}>
+      <span style={{ color: c.textMuted, flexShrink: 0 }}>{label}:</span>
+      <span style={{ color: c.textSecondary }}>{value}</span>
+    </div>
+  )
+}
+
+function TableRowCells({ contact, tags, c, onDelete }) {
+  return (
+    <>
+      <td style={{ padding: '14px 16px' }}>
+        <div style={{ fontWeight: c.weight.button, color: c.textPrimary }}>
+          {contact.name || '—'}
+        </div>
+      </td>
+      <td style={{ padding: '14px 16px', color: c.textSecondary }}>
+        {contact.company || '—'}
+      </td>
+      <td style={{ padding: '14px 16px', color: c.textMuted }}>
+        {contact.role || '—'}
+      </td>
+      <td style={{ padding: '14px 16px', color: c.textSecondary }}>
+        {contact.email || '—'}
+      </td>
+      <td style={{ padding: '14px 16px', color: c.textSecondary }}>
+        {contact.phone || '—'}
+      </td>
+      <td style={{ padding: '14px 16px' }}>
+        <SourceBadge source={contact.source} />
+      </td>
+      <td style={{ padding: '14px 16px' }}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {tags.map((tag, i) => <TagBadge key={i} tag={tag} c={c} />)}
+        </div>
+      </td>
+      <td style={{ padding: '14px 16px' }} onClick={e => e.stopPropagation()}>
+        <button
+          onClick={() => {
+            if (window.confirm(`Delete ${contact.name}?`)) onDelete(contact.id)
+          }}
+          style={{
+            background: c.dangerSoft, border: `1px solid ${c.danger}44`,
+            color: c.danger, borderRadius: c.radius.sm, padding: '6px 10px',
+            cursor: 'pointer', fontSize: 14,
+          }}
+          title="Delete contact"
+        >
+          🗑
+        </button>
+      </td>
+    </>
   )
 }

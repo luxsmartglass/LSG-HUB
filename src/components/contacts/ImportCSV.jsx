@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
+import { useIsNarrow } from '../../hooks/useMediaQuery'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 
@@ -57,6 +58,7 @@ const FIELD_OPTIONS = ['', 'name', 'email', 'phone', 'company', 'role', 'notes',
 
 export default function ImportCSV({ onImport, onClose }) {
   const { c } = useTheme()
+  const isNarrow = useIsNarrow()
   const addToast = useToast()
   const fileRef = useRef(null)
   const [dragging, setDragging] = useState(false)
@@ -196,7 +198,7 @@ export default function ImportCSV({ onImport, onClose }) {
             <div style={{ color: c.textPrimary, fontSize: c.text.md, fontWeight: c.weight.button, marginBottom: 12 }}>
               Column Mapping ({parsed.rows.length} rows detected)
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : '1fr 1fr', gap: 10 }}>
               {parsed.headers.map((header, i) => (
                 <div key={i} style={{
                   display: 'flex', alignItems: 'center', gap: 10,

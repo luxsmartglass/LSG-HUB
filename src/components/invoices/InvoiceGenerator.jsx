@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTheme } from '../../theme/useTheme'
 import { Button } from '../ui/Button'
+import { useIsMobile, useIsNarrow } from '../../hooks/useMediaQuery'
 
 function generateInvoiceNumber() {
   const now = new Date()
@@ -12,6 +13,8 @@ function generateInvoiceNumber() {
 
 export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, settings = {} }) {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
+  const isNarrow = useIsNarrow()
 
   const inputStyle = {
     background: c.surfaceHover,
@@ -143,16 +146,22 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
     <div style={{
       position: 'fixed', inset: 0, background: c.overlay,
       zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      overflowY: 'auto', padding: '24px 16px', fontFamily: c.font.body,
+      overflowY: 'auto', padding: isMobile ? 0 : '24px 16px', fontFamily: c.font.body,
     }}>
       <div style={{
-        background: c.surface, borderRadius: c.radius.xl, width: '100%', maxWidth: 780,
+        background: c.surface,
+        borderRadius: isMobile ? 0 : c.radius.xl,
+        width: '100%',
+        maxWidth: isMobile ? '100%' : 780,
+        minHeight: isMobile ? '100vh' : undefined,
         boxShadow: c.shadowLg,
-        border: `1px solid ${c.border}`,
+        border: isMobile ? 'none' : `1px solid ${c.border}`,
       }}>
         {/* Header */}
         <div style={{
-          background: c.surfaceElevated, padding: '20px 28px', borderRadius: `${c.radius.xl}px ${c.radius.xl}px 0 0`,
+          background: c.surfaceElevated,
+          padding: isMobile ? '16px 20px' : '20px 28px',
+          borderRadius: isMobile ? 0 : `${c.radius.xl}px ${c.radius.xl}px 0 0`,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           borderBottom: `1px solid ${c.border}`,
         }}>
@@ -161,14 +170,15 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
           </h2>
           <button onClick={onClose} style={{
             background: c.surfaceHover, border: 'none', color: c.textPrimary,
-            width: 32, height: 32, borderRadius: c.radius.sm, cursor: 'pointer',
+            width: isMobile ? 40 : 32, height: isMobile ? 40 : 32,
+            borderRadius: c.radius.sm, cursor: 'pointer',
             fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>×</button>
         </div>
 
-        <div style={{ padding: 28 }}>
+        <div style={{ padding: isMobile ? '20px 16px' : 28 }}>
           {/* Top row: invoice # / client / estimate / due date */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 20 }}>
             <div>
               <label style={labelStyle}>Invoice Number</label>
               <input
@@ -228,6 +238,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
               </button>
             </div>
 
+            <div className="h-scroll" style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: c.text.base }}>
               <thead>
                 <tr style={{ borderBottom: `1px solid ${c.border}` }}>
@@ -293,10 +304,11 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
-          {/* Tax + Deposit side by side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+          {/* Tax + Deposit side by side (single column on narrow) */}
+          <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
             <div>
               <label style={labelStyle}>Tax Rate (%)</label>
               <input
@@ -390,7 +402,7 @@ export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, 
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
             <Button variant="ghost" onClick={onClose}>Cancel</Button>
             <Button variant="secondary" onClick={handleSaveDraft}>Save Draft</Button>
             <Button variant="primary" onClick={handleGeneratePDF}>Generate PDF →</Button>

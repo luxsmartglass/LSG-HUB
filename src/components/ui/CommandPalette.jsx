@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTheme } from '../../theme/useTheme'
 import { SearchIcon, PlusIcon, CheckIcon, MonitorIcon, SunIcon, MoonIcon } from './icons'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 
 // ---------------------------------------------------------------------------
 // Static command list factory — receives navigate + setPreference
@@ -144,6 +145,7 @@ export default function CommandPalette() {
   const { c, setPreference } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -264,8 +266,8 @@ export default function CommandPalette() {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '0 24px',
-        paddingTop: '12vh',
+        padding: isMobile ? '0' : '0 24px',
+        paddingTop: isMobile ? '6vh' : '12vh',
         animation: 'fadeIn .18s ease both',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) close() }}
@@ -274,11 +276,11 @@ export default function CommandPalette() {
         style={{
           background: c.surface,
           border: '1px solid ' + c.border,
-          borderRadius: c.radius.xl,
+          borderRadius: isMobile ? 0 : c.radius.xl,
           boxShadow: c.shadowLg,
           width: '100%',
-          maxWidth: 560,
-          maxHeight: '60vh',
+          maxWidth: isMobile ? '100%' : 560,
+          maxHeight: isMobile ? '80vh' : '60vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',

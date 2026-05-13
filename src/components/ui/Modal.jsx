@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { useTheme } from '../../theme/useTheme'
 import { XIcon } from './icons'
+import { useIsMobile } from '../../hooks/useMediaQuery'
+import { useReducedMotion, spring, springSnappy } from '../../lib/motion'
 
 const SIZE_WIDTHS = {
   sm: 420,
@@ -19,6 +22,8 @@ export function Modal({
 }) {
   const { c } = useTheme()
   const panelRef = useRef(null)
+  const isMobile = useIsMobile()
+  const reduced = useReducedMotion()
 
   // Body scroll lock
   useEffect(() => {
@@ -47,15 +52,29 @@ export function Modal({
 
   if (!open) return null
 
-  const width = SIZE_WIDTHS[size] || SIZE_WIDTHS.md
-  const maxHeight = '92vh'
+  const width = isMobile ? '100%' : (SIZE_WIDTHS[size] || SIZE_WIDTHS.md)
+  const maxHeight = isMobile ? '100vh' : '92vh'
+  const borderRadius = isMobile ? 0 : undefined
 
   function handleOverlayClick(e) {
     if (e.target === e.currentTarget) onClose()
   }
 
+  // Motion props for backdrop
+  const backdropMotion = reduced
+    ? {}
+    : { initial: { opacity: 0 }, animate: { opacity: 1 } }
+
+  // Motion props for panel — desktop scale, mobile slide-up
+  const panelMotion = reduced
+    ? {}
+    : isMobile
+      ? { initial: { y: '100%' }, animate: { y: 0 }, transition: spring }
+      : { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, transition: springSnappy }
+
   return (
-    <div
+    <motion.div
+      {...backdropMotion}
       style={{
         position: 'fixed',
         inset: 0,
@@ -63,27 +82,27 @@ export function Modal({
         backdropFilter: 'blur(3px)',
         zIndex: 9500,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: isMobile ? 'flex-end' : 'center',
         justifyContent: 'center',
-        padding: 24,
-        animation: 'fadeIn .2s ease both',
+        padding: isMobile ? 0 : 24,
       }}
       onClick={handleOverlayClick}
     >
-      <div
+      <motion.div
         ref={panelRef}
         tabIndex={-1}
+        {...panelMotion}
         style={{
           background: c.surface,
           border: '1px solid ' + c.border,
-          borderRadius: c.radius.xl,
+          borderRadius: borderRadius !== undefined ? borderRadius : c.radius.xl,
           boxShadow: c.shadowLg,
           width,
+          maxWidth: isMobile ? '100%' : undefined,
           maxHeight,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          animation: 'scaleIn .22s cubic-bezier(.22,1,.36,1) both',
           outline: 'none',
         }}
       >
@@ -154,8 +173,8 @@ export function Modal({
             {footer}
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

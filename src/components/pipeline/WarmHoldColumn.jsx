@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
 import { useTheme } from '../../theme/useTheme';
 import { useState } from 'react';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 function daysSince(dateStr) {
   if (!dateStr) return 0;
@@ -261,14 +262,16 @@ function WarmCard({ deal, index, onRefresh, onDelete }) {
 
 export default function WarmHoldColumn({ deals = [], stage, onRefresh, onDelete, onAddContact }) {
   const { c } = useTheme();
+  const isMobile = useIsMobile();
+  const colWidth = isMobile ? 280 : 260;
   const totalValue = deals.reduce((sum, d) => sum + (parseFloat(d.quote_value) || 0), 0);
   const overdueCount = deals.filter(d => daysSince(d.created_at) > 60).length;
 
   return (
     <div style={{
-      width: 260,
-      minWidth: 260,
-      maxWidth: 260,
+      width: colWidth,
+      minWidth: colWidth,
+      maxWidth: isMobile ? colWidth : 260,
       display: 'flex',
       flexDirection: 'column',
       borderRadius: c.radius.lg,

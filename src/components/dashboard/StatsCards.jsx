@@ -1,40 +1,15 @@
-import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile, useIsNarrow } from '../../hooks/useMediaQuery'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
-
-function AnimatedNumber({ value, prefix = '', suffix = '', decimals = 0 }) {
-  const ref = useRef(null)
-  const prev = useRef(0)
-
-  useEffect(() => {
-    if (!ref.current || value === undefined) return
-    const start = prev.current
-    const end = value
-    const duration = 900
-    const startTime = performance.now()
-    function step(now) {
-      const pct = Math.min((now - startTime) / duration, 1)
-      const ease = 1 - Math.pow(1 - pct, 3)
-      const v = start + (end - start) * ease
-      if (ref.current) ref.current.textContent = prefix + (decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString('en-CA')) + suffix
-      if (pct < 1) requestAnimationFrame(step)
-      else prev.current = end
-    }
-    requestAnimationFrame(step)
-  }, [value])
-
-  return (
-    <span ref={ref} style={{ fontVariantNumeric: 'tabular-nums' }}>
-      {prefix}0{suffix}
-    </span>
-  )
-}
+import AnimatedNumber from '../ui/AnimatedNumber'
 
 export default function StatsCards({ stats }) {
   const navigate = useNavigate()
   const { c } = useTheme()
+  const isMobile = useIsMobile()
+  const isNarrow = useIsNarrow()
 
   if (!stats) return null
 
@@ -96,7 +71,7 @@ export default function StatsCards({ stats }) {
   ]
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
       {cards.map((card, i) => (
         <Card
           key={card.label}

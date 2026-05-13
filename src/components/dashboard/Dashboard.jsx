@@ -4,9 +4,12 @@ import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
 import { useActivityFeed } from '../../hooks/useActivityFeed'
+import { useIsMobile } from '../../hooks/useMediaQuery'
+import { useReducedMotion } from '../../lib/motion'
 import ErrorBanner from '../ui/ErrorBanner'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
+import AnimatedNumber from '../ui/AnimatedNumber'
 import StatsCards from './StatsCards'
 import RevenueChart from './RevenueChart'
 import FunnelChart from './FunnelChart'
@@ -48,13 +51,13 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const toast = useToast()
   const { c } = useTheme()
+  const isMobile = useIsMobile()
 
   const { items: activity, loading: activityLoading } = useActivityFeed()
 
   const quote = QUOTES[new Date().getDate() % QUOTES.length]
 
-  const reducedMotion = typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reducedMotion = useReducedMotion()
 
   useEffect(() => {
     loadData()
@@ -121,7 +124,7 @@ export default function Dashboard() {
         style={{
           background: c.gradientHero,
           borderRadius: c.radius.xl,
-          padding: '34px 38px',
+          padding: isMobile ? '22px 18px' : '34px 38px',
           marginBottom: 20,
           position: 'relative',
           overflow: 'hidden',
@@ -149,7 +152,7 @@ export default function Dashboard() {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{
             fontFamily: c.font.heading,
-            fontSize: c.text.display,
+            fontSize: isMobile ? c.text.xl : c.text.display,
             fontWeight: c.weight.hero,
             color: c.textPrimary,
             marginBottom: 4,
@@ -160,7 +163,7 @@ export default function Dashboard() {
           <div style={{ fontSize: c.text.sm, color: c.textMuted, marginBottom: 14 }}>{dateStr}</div>
           <div style={{
             fontFamily: c.font.heading,
-            fontSize: 34,
+            fontSize: isMobile ? 26 : 34,
             fontWeight: c.weight.body,
             color: c.accent,
             letterSpacing: 2,
@@ -170,7 +173,11 @@ export default function Dashboard() {
             {timeStr}
           </div>
           <div style={{ fontSize: c.text.sm, color: c.textSecondary }}>
-            {stats ? `${stats.activeDeals || 0} active deals · ${openTaskCount} open tasks` : 'Loading…'}
+            {stats ? (
+              <>
+                <AnimatedNumber value={stats.activeDeals || 0} /> active deals · <AnimatedNumber value={openTaskCount} /> open tasks
+              </>
+            ) : 'Loading…'}
           </div>
         </div>
       </div>
@@ -206,7 +213,7 @@ export default function Dashboard() {
 
       {/* CHARTS GRID */}
       {!loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 380px', gap: 20, marginBottom: 20 }}>
           <RevenueChart estimates={recentEstimates} pipeline={pipeline} />
           <FunnelChart pipeline={pipeline} />
         </div>
@@ -214,7 +221,7 @@ export default function Dashboard() {
 
       {/* QUICK ACTIONS + ACTIVITY FEED */}
       {!loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
           {/* Quick Actions */}
           <Card
             header={

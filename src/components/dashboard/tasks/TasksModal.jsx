@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { format } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../../../theme/useTheme'
+import { listItem, useReducedMotion } from '../../../lib/motion'
 import { Modal } from '../../ui/Modal'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
@@ -33,6 +35,7 @@ function ymd(iso) {
 
 export default function TasksModal({ open, onClose, tasks, today, addTask, toggleTask, updateTask, deleteTask }) {
   const { c } = useTheme()
+  const reduced = useReducedMotion()
   const [filter, setFilter] = useState('all')
   const [newTitle, setNewTitle] = useState('')
   const [newUrgency, setNewUrgency] = useState('medium')
@@ -103,18 +106,36 @@ export default function TasksModal({ open, onClose, tasks, today, addTask, toggl
         <>
           <div style={subheaderStyle}>Open · {openFiltered.length}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {openFiltered.map(task => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                today={today}
-                showDue
-                onToggle={toggleTask}
-                onDelete={deleteTask}
-                onRename={onRename}
-                onSetDue={onSetDue}
-              />
-            ))}
+            {reduced ? (
+              openFiltered.map(task => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  today={today}
+                  showDue
+                  onToggle={toggleTask}
+                  onDelete={deleteTask}
+                  onRename={onRename}
+                  onSetDue={onSetDue}
+                />
+              ))
+            ) : (
+              <AnimatePresence initial={false}>
+                {openFiltered.map(task => (
+                  <motion.div key={task.id} layout {...listItem}>
+                    <TaskRow
+                      task={task}
+                      today={today}
+                      showDue
+                      onToggle={toggleTask}
+                      onDelete={deleteTask}
+                      onRename={onRename}
+                      onSetDue={onSetDue}
+                    />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
           </div>
         </>
       )}
@@ -124,22 +145,43 @@ export default function TasksModal({ open, onClose, tasks, today, addTask, toggl
         <>
           <div style={subheaderStyle}>Scheduled · {scheduled.length}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {scheduled.map(task => (
-              <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <TaskRow
-                    task={task}
-                    today={today}
-                    showDue
-                    onToggle={toggleTask}
-                    onDelete={deleteTask}
-                    onRename={onRename}
-                    onSetDue={onSetDue}
-                  />
+            {reduced ? (
+              scheduled.map(task => (
+                <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <TaskRow
+                      task={task}
+                      today={today}
+                      showDue
+                      onToggle={toggleTask}
+                      onDelete={deleteTask}
+                      onRename={onRename}
+                      onSetDue={onSetDue}
+                    />
+                  </div>
+                  <Badge tone="highlight">{task.due_date}</Badge>
                 </div>
-                <Badge tone="highlight">{task.due_date}</Badge>
-              </div>
-            ))}
+              ))
+            ) : (
+              <AnimatePresence initial={false}>
+                {scheduled.map(task => (
+                  <motion.div key={task.id} layout {...listItem} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <TaskRow
+                        task={task}
+                        today={today}
+                        showDue
+                        onToggle={toggleTask}
+                        onDelete={deleteTask}
+                        onRename={onRename}
+                        onSetDue={onSetDue}
+                      />
+                    </div>
+                    <Badge tone="highlight">{task.due_date}</Badge>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
           </div>
         </>
       )}
@@ -154,16 +196,32 @@ export default function TasksModal({ open, onClose, tasks, today, addTask, toggl
                 {format(new Date(key + 'T00:00:00'), 'EEE, MMM d')}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, opacity: 0.7 }}>
-                {groups[key].map(task => (
-                  <TaskRow
-                    key={task.id}
-                    task={task}
-                    today={today}
-                    onToggle={toggleTask}
-                    onDelete={deleteTask}
-                    onRename={onRename}
-                  />
-                ))}
+                {reduced ? (
+                  groups[key].map(task => (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      today={today}
+                      onToggle={toggleTask}
+                      onDelete={deleteTask}
+                      onRename={onRename}
+                    />
+                  ))
+                ) : (
+                  <AnimatePresence initial={false}>
+                    {groups[key].map(task => (
+                      <motion.div key={task.id} layout {...listItem}>
+                        <TaskRow
+                          task={task}
+                          today={today}
+                          onToggle={toggleTask}
+                          onDelete={deleteTask}
+                          onRename={onRename}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )}
               </div>
             </div>
           ))}

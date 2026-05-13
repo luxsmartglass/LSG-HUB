@@ -1,8 +1,10 @@
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile } from '../../hooks/useMediaQuery'
 import AriaChat from './AriaChat'
 
 export default function Aria() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
 
   return (
     <div className="fade-up" style={{
@@ -10,7 +12,7 @@ export default function Aria() {
       display: 'flex',
       flexDirection: 'column',
       background: c.bg,
-      padding: '32px 24px',
+      padding: isMobile ? '16px 12px' : '32px 24px',
       fontFamily: c.font.body,
       boxSizing: 'border-box',
     }}>

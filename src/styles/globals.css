@@ -50,3 +50,16 @@ html[data-theme='light'] ::placeholder { color: #6b6680; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
+
+/* Responsive helpers (used by Layout / Dashboard where a CSS class is cleaner than a JS branch) */
+@media (max-width: 768px) {
+  .only-desktop { display: none !important; }
+}
+@media (min-width: 769px) {
+  .only-mobile { display: none !important; }
+}
+.h-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Slide-in keyframes for the mobile drawer / bottom sheets */
+@keyframes slideInLeft  { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes slideUp      { from { transform: translateY(100%);  } to { transform: translateY(0); } }

@@ -2,7 +2,7 @@ import { useTheme } from '../../theme/useTheme'
 
 function fmtCAD(n) { return '$' + Math.round(n || 0).toLocaleString('en-CA') + ' CAD' }
 
-export default function QuoteSidebar({ calc, w }) {
+export default function QuoteSidebar({ calc, w, fullWidth = false }) {
   const { c } = useTheme()
   if (!calc) return null
 
@@ -12,8 +12,8 @@ export default function QuoteSidebar({ calc, w }) {
       border: '1px solid ' + c.border,
       borderRadius: c.radius.lg,
       padding: 20,
-      position: 'sticky',
-      top: 0,
+      width: fullWidth ? '100%' : undefined,
+      boxSizing: fullWidth ? 'border-box' : undefined,
     }}>
       <div style={{
         fontFamily: c.font.heading,

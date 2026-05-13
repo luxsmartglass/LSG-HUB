@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { PIPELINE_STAGES } from '../../lib/pricingDatabase';
 import { useToast } from '../ui/Toast';
 import { useTheme } from '../../theme/useTheme';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 
 function formatValue(val) {
@@ -32,6 +33,7 @@ function getStageMeta(stageId) {
 export default function DealCard({ deal, index, onRefresh, onDelete }) {
   const addToast = useToast();
   const { c } = useTheme();
+  const isMobile = useIsMobile();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     client_name: deal.client_name || '',
@@ -165,8 +167,11 @@ export default function DealCard({ deal, index, onRefresh, onDelete }) {
               title="Edit deal"
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: '2px 4px', borderRadius: c.radius.sm,
+                padding: isMobile ? '6px 8px' : '2px 4px', borderRadius: c.radius.sm,
                 color: c.textMuted, flexShrink: 0, lineHeight: 1,
+                minWidth: isMobile ? 36 : undefined,
+                minHeight: isMobile ? 36 : undefined,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../theme/useTheme'
+import { useIsMobile } from '../hooks/useMediaQuery'
 
 export default function Login() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -35,7 +37,9 @@ export default function Login() {
         backdropFilter: 'blur(20px)',
         border: `1px solid ${c.accent}33`,
         borderRadius: c.radius.xl,
-        padding: '48px 52px', maxWidth: 420, width: '90%',
+        padding: isMobile ? '36px 24px' : '48px 52px',
+        maxWidth: 'min(420px, 92vw)',
+        width: '100%',
         boxShadow: c.shadowLg,
         animation: 'scaleIn 0.4s ease both', textAlign: 'center',
       }}>

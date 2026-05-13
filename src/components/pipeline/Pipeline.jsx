@@ -8,6 +8,7 @@ import { Modal } from '../ui/Modal';
 import LoadingScreen from '../ui/LoadingScreen';
 import ErrorBanner from '../ui/ErrorBanner';
 import KanbanBoard from './KanbanBoard';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 function formatCAD(value) {
   return '$' + (parseFloat(value) || 0).toLocaleString('en-CA', {
@@ -174,6 +175,7 @@ function AddDealModal({ open, onClose, onSaved, defaultStage }) {
 export default function Pipeline() {
   const addToast = useToast();
   const { c } = useTheme();
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [deals, setDeals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -233,15 +235,14 @@ export default function Pipeline() {
   return (
     <div className="fade-up" style={{
       fontFamily: c.font.body,
-      animation: 'fadeUp 0.35s ease both',
     }}>
       {/* Page header */}
       <div style={{
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: isMobile ? 'flex-start' : 'flex-start',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: 16,
+        gap: isMobile ? 12 : 16,
         marginBottom: 20,
       }}>
         <div>

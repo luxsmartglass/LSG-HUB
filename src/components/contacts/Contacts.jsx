@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
+import { useIsMobile, useIsNarrow } from '../../hooks/useMediaQuery'
 import LoadingScreen from '../ui/LoadingScreen'
 import ErrorBanner from '../ui/ErrorBanner'
 import { Input } from '../ui/Input'
@@ -13,6 +14,8 @@ import ImportCSV from './ImportCSV'
 
 export default function Contacts() {
   const { c } = useTheme()
+  const isMobile = useIsMobile()
+  const isNarrow = useIsNarrow()
   const addToast = useToast()
   const location = useLocation()
   const navigate = useNavigate()
@@ -139,8 +142,9 @@ export default function Contacts() {
       {/* Header */}
       <div style={{
         background: c.surface,
-        padding: '20px 32px',
+        padding: isMobile ? '16px 16px' : '20px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: isMobile ? 10 : 0,
         borderBottom: `1px solid ${c.border}`,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -155,25 +159,28 @@ export default function Contacts() {
             {contacts.length}
           </span>
         </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{
+          display: 'flex', gap: isMobile ? 8 : 12, alignItems: 'center',
+          flexWrap: 'wrap', flex: isMobile ? '1 1 100%' : undefined,
+        }}>
           <Input
             type="text"
             placeholder="Search contacts..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            style={{ width: 240 }}
+            style={{ width: isNarrow ? undefined : 240, flex: isNarrow ? '1 1 100%' : undefined }}
           />
-          <Button variant="ghost" onClick={() => setShowImport(true)}>
+          <Button variant="ghost" size={isMobile ? 'sm' : undefined} onClick={() => setShowImport(true)}>
             Import CSV
           </Button>
-          <Button variant="primary" onClick={() => setCreating(true)}>
+          <Button variant="primary" size={isMobile ? 'sm' : undefined} onClick={() => setCreating(true)}>
             + New Contact
           </Button>
         </div>
       </div>
 
       {/* Body */}
-      <div style={{ padding: '24px 32px' }}>
+      <div style={{ padding: isMobile ? '16px 16px' : '24px 32px' }}>
         <ErrorBanner error={error} onRetry={fetchContacts} />
         {loading ? (
           <div style={{ height: 200 }}>

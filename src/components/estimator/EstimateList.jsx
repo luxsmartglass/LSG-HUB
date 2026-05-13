@@ -7,6 +7,8 @@ import LoadingScreen from '../ui/LoadingScreen'
 import ErrorBanner from '../ui/ErrorBanner'
 import EmptyState from '../ui/EmptyState'
 import EstimatePDF from './EstimatePDF'
+import { useIsNarrow } from '../../hooks/useMediaQuery'
+import { Card } from '../ui/Card'
 
 function fmt(n) {
   if (n == null) return '—'
@@ -27,6 +29,7 @@ export default function EstimateList() {
   const navigate = useNavigate()
   const toast = useToast()
   const { c } = useTheme()
+  const isNarrow = useIsNarrow()
   const [estimates, setEstimates] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -93,7 +96,7 @@ export default function EstimateList() {
   }
 
   return (
-    <div className="fade-up" style={{ animation: 'fadeUp 0.35s ease both' }}>
+    <div className="fade-up">
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
@@ -161,8 +164,59 @@ export default function EstimateList() {
             />
           )}
         </div>
+      ) : isNarrow ? (
+        /* Mobile card list (≤520px) */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {filtered.map(est => (
+            <Card key={est.id} pad={14}>
+              {/* Top row: client name + status */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontWeight: c.weight.strong, fontSize: c.text.base, color: c.textPrimary }}>
+                  {est.client_name || '—'}
+                </span>
+                {est.status && (
+                  <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: c.radius.pill, fontSize: c.text.sm, fontWeight: c.weight.button, ...statusBadgeStyle(est.status) }}>
+                    {est.status}
+                  </span>
+                )}
+              </div>
+              {/* Meta row */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginBottom: 10 }}>
+                <span style={{ fontSize: c.text.sm, color: c.textMuted }}>
+                  <span style={{ color: c.textSecondary, fontWeight: c.weight.body }}>Total: </span>
+                  <span style={{ color: c.textPrimary, fontWeight: c.weight.strong }}>{fmt(est.total_revenue)}</span>
+                </span>
+                <span style={{ fontSize: c.text.sm, color: c.textMuted }}>
+                  <span style={{ color: c.textSecondary }}>Margin: </span>
+                  <span style={{ color: c.textPrimary }}>{fmtPct(est.margin_pct)}</span>
+                </span>
+                <span style={{ fontSize: c.text.sm, color: c.textMuted }}>
+                  <span style={{ color: c.textSecondary }}>Zones: </span>
+                  <span style={{ color: c.textPrimary }}>{Array.isArray(est.zones) ? est.zones.length : '—'}</span>
+                </span>
+                <span style={{ fontSize: c.text.sm, color: c.textMuted }}>{fmtDate(est.created_at)}</span>
+              </div>
+              {/* Action buttons */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => navigate(`/estimator/${est.id}`)}
+                  style={{ flex: 1, padding: '7px 0', background: c.surfaceElevated, color: c.textPrimary, border: '1px solid ' + c.border, borderRadius: c.radius.sm, fontSize: c.text.sm, fontWeight: c.weight.body, cursor: 'pointer', fontFamily: c.font.body }}
+                >Edit</button>
+                <button
+                  onClick={() => setSelectedEstimate(est)}
+                  style={{ flex: 1, padding: '7px 0', background: c.accent, color: c.accentText, border: 'none', borderRadius: c.radius.sm, fontSize: c.text.sm, fontWeight: c.weight.button, cursor: 'pointer', fontFamily: c.font.body }}
+                >PDF</button>
+                <button
+                  onClick={() => deleteEstimate(est)}
+                  style={{ flex: 1, padding: '7px 0', background: c.dangerSoft, color: c.danger, border: '1px solid ' + c.danger + '44', borderRadius: c.radius.sm, fontSize: c.text.sm, fontWeight: c.weight.body, cursor: 'pointer', fontFamily: c.font.body }}
+                >Delete</button>
+              </div>
+            </Card>
+          ))}
+        </div>
       ) : (
-        <div style={{ background: c.surface, borderRadius: c.radius.lg, border: '1px solid ' + c.border, overflow: 'hidden' }}>
+        /* Desktop/tablet table with h-scroll */
+        <div className="h-scroll" style={{ background: c.surface, borderRadius: c.radius.lg, border: '1px solid ' + c.border }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: c.text.base }}>
             <thead>
               <tr style={{ background: c.surfaceElevated }}>
