@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useTheme } from '../../theme/useTheme'
 import { useCounts } from '../../hooks/useCounts'
+import { IconButton } from '../ui/IconButton'
+import { XIcon } from '../ui/icons'
 
 // Badge keys map to counts prop fields
 const NAV = [
@@ -15,7 +17,8 @@ const NAV = [
   { path:'/settings', label:'Settings', icon:<SettingsIcon /> },
 ]
 
-export default function Sidebar({ session, counts: countsProp = {} }) {
+// eslint-disable-next-line no-unused-vars
+export default function Sidebar({ session, counts: countsProp = {}, isMobile = false, open, onNavigate, onClose }) {
   const navigate = useNavigate()
   const { c } = useTheme()
   const liveCounts = useCounts()
@@ -30,16 +33,27 @@ export default function Sidebar({ session, counts: countsProp = {} }) {
   const user = session?.user
   const initials = user?.user_metadata?.full_name?.split(' ').map(n=>n[0]).join('').slice(0,2) || 'LSG'
 
+  const sidebarWidth = isMobile ? 'min(280px, 82vw)' : 220
+  const navPadding = isMobile ? '14px 20px' : '11px 20px'
+
   return (
     <div style={{
-      width:220, minWidth:220, background:c.surface, display:'flex',
+      width: sidebarWidth, minWidth: isMobile ? undefined : 220,
+      background:c.surface, display:'flex',
       flexDirection:'column', height:'100vh', position:'relative', zIndex:10,
       transition:'background-color 0.25s ease',
     }}>
-      {/* Logo */}
-      <div style={{ padding:'28px 20px 20px', borderBottom:'1px solid '+c.border }}>
-        <div style={{ fontFamily:c.font.heading, fontSize:28, fontWeight:c.weight.hero, color:c.accent, letterSpacing:2 }}>LSG</div>
-        <div style={{ fontSize:10, color:c.textMuted, letterSpacing:1.5, textTransform:'uppercase', marginTop:3 }}>Lux Smart Glass</div>
+      {/* Logo + close button (mobile) */}
+      <div style={{ padding:'20px 20px 16px', borderBottom:'1px solid '+c.border, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div>
+          <div style={{ fontFamily:c.font.heading, fontSize:28, fontWeight:c.weight.hero, color:c.accent, letterSpacing:2 }}>LSG</div>
+          <div style={{ fontSize:10, color:c.textMuted, letterSpacing:1.5, textTransform:'uppercase', marginTop:3 }}>Lux Smart Glass</div>
+        </div>
+        {isMobile && (
+          <IconButton label="Close menu" onClick={onClose} variant="ghost">
+            <XIcon size={18} />
+          </IconButton>
+        )}
       </div>
 
       {/* Nav */}
@@ -51,8 +65,9 @@ export default function Sidebar({ session, counts: countsProp = {} }) {
               key={item.path}
               to={item.path}
               end={item.path === '/'}
+              onClick={() => onNavigate?.()}
               style={({ isActive }) => ({
-                display:'flex', alignItems:'center', gap:10, padding:'11px 20px',
+                display:'flex', alignItems:'center', gap:10, padding:navPadding,
                 color: isActive ? c.textPrimary : c.textSecondary,
                 background: isActive ? c.accentSoft : 'transparent',
                 borderLeft: isActive ? '3px solid '+c.accent : '3px solid transparent',
