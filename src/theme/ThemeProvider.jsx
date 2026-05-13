@@ -18,6 +18,7 @@ export function ThemeProvider({ children }) {
 
   // keep `mode` in sync when pref changes or when OS theme changes (only while pref === 'system')
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: sync derived mode from pref+OS preference
     setMode(resolveMode(pref === 'system' ? null : pref, prefersDark()))
     if (pref !== 'system' || typeof window === 'undefined') return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -43,6 +44,7 @@ export function ThemeProvider({ children }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentional: co-export hook with provider for ergonomic import
 export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) throw new Error('useTheme must be used within <ThemeProvider>')

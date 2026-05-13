@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../../lib/supabase'
-import { useToast } from '../ui/Toast'
+import { useState } from 'react'
 import { useTheme } from '../../theme/useTheme'
 import { Button } from '../ui/Button'
 
@@ -14,7 +12,6 @@ function generateInvoiceNumber() {
 
 export default function InvoiceGenerator({ invoice, estimates, onSave, onClose, settings = {} }) {
   const { c } = useTheme()
-  const addToast = useToast()
 
   const inputStyle = {
     background: c.surfaceHover,

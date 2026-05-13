@@ -2,7 +2,6 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../ui/Toast';
 import { useTheme } from '../../theme/useTheme';
-import { PIPELINE_STAGES } from '../../lib/pricingDatabase';
 import { useState } from 'react';
 
 function daysSince(dateStr) {

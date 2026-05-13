@@ -32,6 +32,7 @@ function AddDealModal({ open, onClose, onSaved, defaultStage }) {
   // Sync defaultStage when modal opens
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: sync form stage when modal prop changes
       setForm(f => ({ ...f, stage: defaultStage || DEFAULT_STAGE }));
     }
   }, [open, defaultStage]);
@@ -183,6 +184,7 @@ export default function Pipeline() {
   // Honor ?new=1 from command palette
   useEffect(() => {
     if (searchParams.get('new') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: URL param triggers modal, then param is cleared
       setAddModalDefaultStage(DEFAULT_STAGE);
       setShowAddModal(true);
       // Strip the param
@@ -209,6 +211,7 @@ export default function Pipeline() {
   }, [addToast]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: load on mount; fetchDeals is an async callback
     fetchDeals();
   }, [fetchDeals]);
 

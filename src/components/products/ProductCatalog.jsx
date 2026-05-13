@@ -34,6 +34,23 @@ function CategoryBadge({ label, type, c }) {
   )
 }
 
+function SectionHeader({ title, c }) {
+  return (
+    <h2 style={{
+      color: c.accent,
+      fontSize: c.text.sm,
+      fontWeight: c.weight.label,
+      letterSpacing: '0.09em',
+      textTransform: 'uppercase',
+      margin: '0 0 14px',
+      paddingBottom: 8,
+      borderBottom: `1px solid ${c.border}`,
+    }}>
+      {title}
+    </h2>
+  )
+}
+
 function ProductCard({ name, sellPrice, sellUnit, costPrice, description, category, categoryType, costNote, c }) {
   const margin = sellPrice > 0 ? ((sellPrice - costPrice) / sellPrice) * 100 : 0
 
@@ -208,21 +225,6 @@ export default function ProductCatalog() {
     },
   ]
 
-  const SectionHeader = ({ title }) => (
-    <h2 style={{
-      color: c.accent,
-      fontSize: c.text.sm,
-      fontWeight: c.weight.label,
-      letterSpacing: '0.09em',
-      textTransform: 'uppercase',
-      margin: '0 0 14px',
-      paddingBottom: 8,
-      borderBottom: `1px solid ${c.border}`,
-    }}>
-      {title}
-    </h2>
-  )
-
   return (
     <div>
       {/* FX Rate Chip */}
@@ -256,7 +258,7 @@ export default function ProductCatalog() {
 
       {/* Film & Glass */}
       <div style={{ marginBottom: 40 }}>
-        <SectionHeader title="Film & Glass Products" />
+        <SectionHeader title="Film & Glass Products" c={c} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
           {filmProducts.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
@@ -264,7 +266,7 @@ export default function ProductCatalog() {
 
       {/* Normal Transformers */}
       <div style={{ marginBottom: 40 }}>
-        <SectionHeader title="Normal Transformers — $189/unit" />
+        <SectionHeader title="Normal Transformers — $189/unit" c={c} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
           {normalTransformers.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
@@ -272,7 +274,7 @@ export default function ProductCatalog() {
 
       {/* Dimming Transformers */}
       <div style={{ marginBottom: 40 }}>
-        <SectionHeader title="Dimming Transformers — $239/unit" />
+        <SectionHeader title="Dimming Transformers — $239/unit" c={c} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
           {dimmingTransformers.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>
@@ -280,7 +282,7 @@ export default function ProductCatalog() {
 
       {/* Multi-Channel */}
       <div style={{ marginBottom: 24 }}>
-        <SectionHeader title="Multi-Channel Controllers — $239/unit" />
+        <SectionHeader title="Multi-Channel Controllers — $239/unit" c={c} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
           {multiChannel.map(p => <ProductCard key={p.name} {...p} c={c} />)}
         </div>

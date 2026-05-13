@@ -29,6 +29,7 @@ export default function Contacts() {
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     if (params.get('new') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: URL param triggers UI state, then param is cleared
       setCreating(true)
       navigate('/contacts', { replace: true })
     }
@@ -50,7 +51,7 @@ export default function Contacts() {
     setLoading(false)
   }, [addToast])
 
-  useEffect(() => { fetchContacts() }, [fetchContacts])
+  useEffect(() => { fetchContacts() }, [fetchContacts]) // eslint-disable-line react-hooks/set-state-in-effect -- intentional: load on mount; fetchContacts is async
 
   const handleDelete = async (id) => {
     const { error } = await supabase.from('contacts').delete().eq('id', id)

@@ -41,6 +41,7 @@ export default function Estimator() {
 
   useEffect(() => {
     if (location.state?.prefill) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: one-time prefill from navigation state
       setW(prev => ({ ...prev, ...location.state.prefill }))
     }
   }, [])
@@ -308,7 +309,7 @@ function Field({ label, value, onChange, placeholder, type = 'text', inputStyle,
   )
 }
 
-function SelectField({ label, value, onChange, options, inputStyle, labelStyle, c }) {
+function SelectField({ label, value, onChange, options, inputStyle, labelStyle }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <label style={labelStyle}>{label}</label>

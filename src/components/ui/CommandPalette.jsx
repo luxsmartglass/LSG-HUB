@@ -163,6 +163,7 @@ export default function CommandPalette() {
 
   // Reset selectedIndex when query changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: sync cursor to top when filter changes
     setSelectedIndex(0)
   }, [query])
 
@@ -187,11 +188,12 @@ export default function CommandPalette() {
     return () => window.removeEventListener('lsg:open-command-palette', handleOpenEvent)
   }, [])
 
-  // Auto-focus input when opened
+  // Auto-focus input when opened; reset state on close
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 10)
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: reset palette state when closed
       setQuery('')
       setSelectedIndex(0)
     }

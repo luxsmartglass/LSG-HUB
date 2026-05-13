@@ -53,6 +53,7 @@ export default function Invoices() {
   // Honor ?new=1 from command palette
   useEffect(() => {
     if (searchParams.get('new') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: URL param triggers UI state, then param is cleared
       setSelected(null)
       setView('edit')
       setSearchParams({}, { replace: true })
@@ -77,6 +78,7 @@ export default function Invoices() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: load on mount; fetchAll/loadSettings are async callbacks
     fetchAll()
     loadSettings()
   }, [fetchAll])

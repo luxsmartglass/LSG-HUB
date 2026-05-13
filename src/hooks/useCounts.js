@@ -33,7 +33,7 @@ export function useCounts() {
     })
   }, [])
 
-  useEffect(() => { reload() }, [reload])
+  useEffect(() => { reload() }, [reload]) // eslint-disable-line react-hooks/set-state-in-effect -- intentional: load on mount; reload() is async
 
   // Refetch when any of the three tables change via realtime
   useRealtime('daily_tasks', reload)

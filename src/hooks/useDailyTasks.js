@@ -20,7 +20,7 @@ export function useDailyTasks() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { reload() }, [reload])
+  useEffect(() => { reload() }, [reload]) // eslint-disable-line react-hooks/set-state-in-effect -- intentional: load on mount; reload() is async
   useRealtime('daily_tasks', () => { reload() })
 
   const addTask = useCallback(async (title, urgency = 'medium', due_date) => {

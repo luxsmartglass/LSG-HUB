@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { useToast } from '../ui/Toast'
 import { useTheme } from '../../theme/useTheme'
 import { Button } from '../ui/Button'
 import { ZONE_TYPES, filmCostPerSqm, glassCostPerSqm, DEFAULT_FX } from '../../lib/pricingDatabase'
@@ -67,7 +66,6 @@ function OutputRow({ label, value, highlight, c }) {
 
 export default function MarginCalculator() {
   const { c } = useTheme()
-  const addToast = useToast()
   const navigate = useNavigate()
 
   const [fx, setFx] = useState(DEFAULT_FX)
@@ -115,12 +113,9 @@ export default function MarginCalculator() {
   const totalRevenue = filmGlassRevenue + installRevenue + transformerSell + elecRevenue
 
   // Cost
-  let costPerSqm = 0
-  if (isGlass) {
-    costPerSqm = glassCostPerSqm(sqmNum, fx)
-  } else {
-    costPerSqm = filmCostPerSqm(sqmNum, isColour ? 'film-colour' : 'film', fx)
-  }
+  const costPerSqm = isGlass
+    ? glassCostPerSqm(sqmNum, fx)
+    : filmCostPerSqm(sqmNum, isColour ? 'film-colour' : 'film', fx)
   const filmGlassCost = sqmNum * costPerSqm
   const tfCostUSD = useDimming ? 95 : 46
   const transformerCost = tfCostUSD * fx

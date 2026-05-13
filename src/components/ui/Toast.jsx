@@ -84,6 +84,7 @@ export function ToastProvider({ children }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- intentional: co-export hook with provider (ToastProvider + useToast)
 export function useToast() {
   return useContext(ToastContext)
 }

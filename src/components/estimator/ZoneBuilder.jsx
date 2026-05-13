@@ -1,6 +1,7 @@
 import { useTheme } from '../../theme/useTheme'
 import { ZONE_TYPES, zoneProduct, zoneProductType } from '../../lib/pricingDatabase'
 
+// eslint-disable-next-line no-unused-vars -- useDimming is passed by parent but not yet used in ZoneBuilder; kept for API compat
 export default function ZoneBuilder({ zones, onChange, useDimming }) {
   const { c } = useTheme()
 

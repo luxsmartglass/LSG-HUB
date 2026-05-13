@@ -22,13 +22,13 @@ export default function GmailSettings() {
   const [email, setEmail] = useState(null)
   const [connecting, setConnecting] = useState(false)
   const [testing, setTesting] = useState(false)
-  const [tokenClient, setTokenClient] = useState(null)
 
   // Restore token from localStorage on mount
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('lsg_gmail_tokens') || 'null')
       if (stored?.access_token && Date.now() < stored.expires_at - 30000) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: one-time init from localStorage on mount
         setToken(stored.access_token)
         setEmail(stored.email || 'Connected Account')
       }
@@ -75,9 +75,8 @@ export default function GmailSettings() {
           setConnecting(false)
         },
       })
-      setTokenClient(client)
       client.requestAccessToken()
-    } catch (err) {
+    } catch {
       addToast('Failed to load Google Identity Services', 'error')
       setConnecting(false)
     }
@@ -91,7 +90,6 @@ export default function GmailSettings() {
     localStorage.removeItem('lsg_gmail_tokens')
     setToken(null)
     setEmail(null)
-    setTokenClient(null)
     addToast('Gmail disconnected', 'success')
   }
 
