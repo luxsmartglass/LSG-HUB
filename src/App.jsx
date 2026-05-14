@@ -8,6 +8,7 @@ import Estimator from './components/estimator/Estimator'
 import EstimateList from './components/estimator/EstimateList'
 import Pipeline from './components/pipeline/Pipeline'
 import Contacts from './components/contacts/Contacts'
+import ColdCalls from './components/cold-calls/ColdCalls'
 import Invoices from './components/invoices/Invoices'
 import Products from './components/products/Products'
 import Settings from './components/settings/Settings'
@@ -65,6 +66,7 @@ export default function App() {
                 <Route path="/estimates" element={<EstimateList />} />
                 <Route path="/pipeline" element={<Pipeline />} />
                 <Route path="/contacts" element={<Contacts />} />
+                <Route path="/cold-calls" element={<ColdCalls />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/settings" element={<Settings />} />
