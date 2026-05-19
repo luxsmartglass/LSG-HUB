@@ -78,6 +78,11 @@ export default function Estimator() {
     try {
       const record = {
         client_name: w.client_name,
+        org: w.org || '',
+        email: w.email || '',
+        phone: w.phone || '',
+        notes: w.notes || '',
+        type: w.type || '',
         project_address: w.address || '',
         zones: w.zones,
         film_price: w.film_price,

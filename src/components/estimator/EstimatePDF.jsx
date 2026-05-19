@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom'
+
 function zoneProductLabel(type) {
   if (['Sauna', 'Window (Exterior)'].includes(type)) return 'Laminated Smart Glass'
   if (type === 'Feature Wall') return 'Colour PDLC Film'
@@ -21,10 +23,22 @@ function fmtDate(s) {
 
 const PRINT_STYLE = `
 @media print {
-  body * { visibility: hidden; }
-  #estimate-pdf-printable, #estimate-pdf-printable * { visibility: visible; }
-  #estimate-pdf-printable { position: absolute; left: 0; top: 0; width: 100%; }
+  @page { margin: 12mm; }
+  html, body { background: #fff !important; }
+  body > *:not(#estimate-print-root) { display: none !important; }
+  #estimate-print-overlay { display: none !important; }
+  #estimate-print-root { position: static !important; padding: 0 !important; overflow: visible !important; }
+  #estimate-print-card {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
   .no-print { display: none !important; }
+  #estimate-pdf-printable { padding: 0 !important; }
 }
 `
 
@@ -54,25 +68,32 @@ export default function EstimatePDF({ estimate, onClose }) {
   const tfCost = e.transformer?.recTotal || 0
   const electrician = e.incl_electrician ? 977 : 0
 
-  return (
+  return createPortal(
     <>
       <style>{PRINT_STYLE}</style>
-      {/* Overlay backdrop */}
+      {/* Overlay backdrop (display:none in print) */}
       <div
-        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-        onClick={e => { if (e.target === e.currentTarget) onClose() }}
+        id="estimate-print-overlay"
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000 }}
+      />
+      {/* Print root — full-screen scrollable container so print can target it */}
+      <div
+        id="estimate-print-root"
+        onClick={ev => { if (ev.target === ev.currentTarget) onClose() }}
+        style={{ position: 'fixed', inset: 0, zIndex: 1001, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', overflowY: 'auto', padding: '24px 16px' }}
       >
         {/* Card */}
-        <div style={{ background: '#fff', borderRadius: 10, maxWidth: 800, width: '100%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', position: 'relative' }}>
+        <div id="estimate-print-card" style={{ background: '#fff', borderRadius: 10, maxWidth: 800, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.4)', position: 'relative' }}>
           {/* Controls (no-print) */}
-          <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #e5ddd0', background: '#f4f1eb', borderRadius: '10px 10px 0 0' }}>
+          <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid #e5ddd0', background: '#f4f1eb', borderRadius: '10px 10px 0 0', position: 'sticky', top: 0, zIndex: 2 }}>
             <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 13.5, fontWeight: 600, color: '#1c2b4a' }}>Estimate Preview</span>
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => window.print()}
                 style={{ padding: '7px 16px', background: '#c9a84c', color: '#1c2b4a', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}
               >
-                Print / Save PDF
+                Download PDF
               </button>
               <button
                 onClick={onClose}
@@ -203,7 +224,8 @@ export default function EstimatePDF({ estimate, onClose }) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }
 
